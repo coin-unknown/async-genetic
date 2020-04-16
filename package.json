@@ -1,0 +1,30 @@
+{
+  "author": "Dmitriy Yurov <narkozzforb@gmail.com>",
+  "name": "genetic",
+  "description": "Implementation of genetic algorithms for nodejs and browser",
+  "version": "0.1.0",
+  "homepage": "https://github.com/BusinessDuck/async-genetic",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/BusinessDuck/async-genetic"
+  },
+  "scripts": {
+    "start": "ts-node --"
+  },
+  "bugs": {
+    "url": "https://github.com/BusinessDuck/async-geneticissues"
+  },
+  "main": "./lib",
+  "engines": {
+    "node": "^0.6.8"
+  }
+  "dependencies": {
+    "async": "^0.1.22",
+    "object-path-immutable": "^4.1.0"
+  },
+  "devDependencies": {
+    "ts-node": "^8.8.2",
+    "typescript": "^3.8.3"
+  },
+  "optionalDependencies": {}
+}
