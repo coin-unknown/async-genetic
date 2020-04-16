@@ -92,11 +92,11 @@ function crossoverFunction(phenoTypeA, phenoTypeB) {
 }
 ```
 
-###  async fitnessFunction (phenotype)
+###  fitnessFunction (phenotype) [async]
 > Must return a promise with number
 
 ```js
-function fitnessFunction(phenotype) {
+async function fitnessFunction(phenotype) {
 	var fitness = 0
 	// use phenotype and possibly some other information
 	// to determine the fitness number.  Higher is better, lower is worse.
@@ -104,33 +104,23 @@ function fitnessFunction(phenotype) {
 }
 ```
 
-### async doesABeatBFunction (phenoTypeA, phenoTypeB)
+### doesABeatBFunction (phenoTypeA, phenoTypeB) [async]
 > Must return Promise with truthy or falsy
 
 This function, if specified, overrides using simply the fitness function to compare two phenotypes.  There are situations where you will want to preserve a certain amount of genetic diversity and so your doesABeatBFunction can return false if the two phenotypes are too different.  When GeneticAlgorithm is comparing two phenoTypes it *only* tests if A can beat B and if so then B dies and is replaced with a mutant or crossover child of A.  If A cannot beat B then nothing happens.  This is an important note to consider.  Suppose A and B are very genetically different and you want to preserve diversity then in your *doesABeatBFunction* you would check how diverse A and B are and simply return falsy if it crosses your threshold.
 
 The default implementation if you don't supply one is:
 ```js
-function doesABeatBFunction(phenoTypeA, phenoTypeB) {
+async function doesABeatBFunction(phenoTypeA, phenoTypeB) {
 	return fitnessFunction(phenoTypeA) >= fitnessFunction(phenoTypeB)
 }
 ```
-
-mutationFunction: (phenotype: T) => T;
-    crossoverFunction: (a: T, b: T) => T;
-    fitnessFunction: (phenotype: T) => Promise<number>;
-    doesABeatBFunction?: (a: T, b: T) => Promise<boolean>;
-    randomFunction?: () => T;
-    populationSize: number;
-    mutateProbablity?: number;
-    deduplicate?: boolean;
-
 
 ### Configuring
 > Next T - is your custom phenotype
 
 | Parameter  | Type | Description |
-| ------------- | ------------- |
+| ------------- | ------------- | ------------- |
 | mutationFunction | (phenotype: T) => T  | Mutate you phenotype as you describe  |
 | crossoverFunction | (a: T, b: T) => T | Cross two different phenotypes in to once (merge)  |
 | fitnessFunction | (phenotype: T) => Promise<number> | Train you phenotype to get result (scores more - better) |
