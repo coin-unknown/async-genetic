@@ -38,8 +38,10 @@ export default [
         ],
         plugins: [
             typescript({
-                compilerOptions: {
-                    target: "es6",
+                tsconfigOverride: {
+                    compilerOptions: {
+                        target: "ES2020",
+                    }
                 }
             }),
         ],
