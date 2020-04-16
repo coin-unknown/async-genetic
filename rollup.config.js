@@ -32,15 +32,15 @@ export default [
     },
     {
         input: "src/genetic.ts",
-        external: [],
+        external: [
+            ...Object.keys(pkg.dependencies || {}),
+            ...Object.keys(pkg.peerDependencies || {}),
+        ],
         plugins: [
-            nodeResolve(),
-            commonjs(),
-            typescript(),
-            buble({
-                transforms: { forOf: false },
-                objectAssign: 'Object.assign',
-                asyncAwait: false
+            typescript({
+                compilerOptions: {
+                    target: "es6",
+                }
             }),
         ],
         output: [

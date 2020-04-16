@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
       "target": "es5",
+      "module": "es2015",
       "moduleResolution": "node",
       "allowJs": true,
       "outDir": "./lib",
@@ -8,9 +9,10 @@
       "esModuleInterop": true,
       "sourceMap": true,
       "allowSyntheticDefaultImports": true,
-      "declaration": true
+      "declaration": true,
     },
     "include": [
       "src/**/*.ts"
-    ]
+    ],
+    "exclude": ["node_modules"],
 }
