@@ -1,4 +1,4 @@
-import { Genetic, GeneticOptions } from '../src/index';
+import { Genetic } from '../src/genetic';
 const PhenotypeSize = 10;
 
 function mutationFunction(phenotype) {

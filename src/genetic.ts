@@ -1,5 +1,4 @@
 import { get, merge } from 'object-path-immutable';
-import async from 'async';
 
 export interface GeneticOptions<T> {
     mutationFunction: (phenotype: T) => T;
@@ -100,41 +99,31 @@ export class Genetic<T> {
     }
 
     private async compete() {
-        const tasks = [];
+        const tasks: Array<Promise<T>> = [];
 
-        return new Promise((resolve, reject) => {
-            for (let idx = 0; idx < this.population.length - 1; idx += 2) {
-                tasks.push(this.task(idx));
-            }
+        for (let idx = 0; idx < this.population.length - 1; idx += 2) {
+            tasks.push(this.task(idx));
+        }
 
-            async.parallel(tasks, (err, results) => {
-                if (err) {
-                    reject(err);
-                }
-
-                this.population = results;
-                resolve();
-            });
-        });
+        this.population = await Promise.all(tasks);
     }
 
-    private task(idx: number) {
-        return (callback: Function) => {
-            const phenotype = this.population[idx];
-            const competitor = this.population[idx + 1];
+    private async task(idx: number) {
+        const phenotype = this.population[idx];
+        const competitor = this.population[idx + 1];
 
-            this.doesABeatB(phenotype, competitor).then((res) => {
-                if (res) {
-                    if (Math.random() < this.options.mutateProbablity) {
-                        callback(null, this.mutate(phenotype));
-                    } else {
-                        callback(null, this.crossover(phenotype));
-                    }
-                } else {
-                    callback(null, competitor);
-                }
-            });
-        };
+        const res = await this.doesABeatB(phenotype, competitor);
+        if (res) {
+            if (Math.random() < this.options.mutateProbablity) {
+                return this.mutate(phenotype);
+            }
+            else {
+                return this.crossover(phenotype);
+            }
+        }
+        else {
+            return competitor;
+        }
     }
 
     private shufflePopulation() {

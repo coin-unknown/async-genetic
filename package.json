@@ -25,7 +25,6 @@
     "node": "^0.6.8"
   },
   "dependencies": {
-    "async": "^0.1.22",
     "object-path-immutable": "^4.1.0"
   },
   "devDependencies": {
