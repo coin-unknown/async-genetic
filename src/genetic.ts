@@ -8,7 +8,6 @@ export interface GeneticOptions<T> {
     randomFunction?: () => T;
     populationSize: number;
     mutateProbablity?: number;
-    deduplicate?: boolean;
 }
 
 export class Genetic<T> {
@@ -50,25 +49,12 @@ export class Genetic<T> {
     }
 
     private populate() {
+        if (this.population.length) {
+            this.population = this.scoredPopulation(Math.floor(this.options.populationSize / 4)).map(item => item.phenotype);
+        }
+
         while (this.population.length < this.options.populationSize) {
             this.population.push(this.options.randomFunction());
-        }
-
-        while (this.options.deduplicate && this.duplicatesMap.size !== this.population.length) {
-            this.deduplicate();
-        }
-    }
-
-    private deduplicate() {
-        for (let idx = 0; idx < this.population.length; idx++) {
-            const phenotype = this.population[idx];
-            const hash = JSON.stringify(phenotype);
-
-            if (!this.duplicatesMap.has(hash)) {
-                this.duplicatesMap.add(hash);
-            } else {
-                this.population[idx] = this.options.randomFunction();
-            }
         }
     }
 
