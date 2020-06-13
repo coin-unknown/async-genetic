@@ -36,7 +36,7 @@ export class Genetic<T> {
 
         this.populate();
         this.shufflePopulation();
-        await this.compete();
+        this.compete();
         return this;
     }
 
