@@ -1,11 +1,10 @@
-import resolve from "rollup-plugin-node-resolve";
-import commonjs from "rollup-plugin-commonjs";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import { terser } from "rollup-plugin-terser";
 import pkg from "./package.json";
 import gzipPlugin from 'rollup-plugin-gzip'
-import buble from 'rollup-plugin-buble';
+import buble from '@rollup/plugin-buble';
 import typescript from 'rollup-plugin-typescript2';
-import nodeResolve from 'rollup-plugin-node-resolve';
 
 export default [
     // browser-friendly UMD build
@@ -17,7 +16,6 @@ export default [
             format: "umd"
         },
         plugins: [
-            nodeResolve(),
             resolve(), // so Rollup can find `ms`
             commonjs(), // so Rollup can convert `ms` to an ES module
             typescript(),
