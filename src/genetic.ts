@@ -23,8 +23,6 @@ export class Genetic<T> {
         mutateProbablity: 0.5,
     };
 
-    private duplicatesMap: Set<string> = new Set();
-
     constructor(options: GeneticOptions<T>, private population: Array<T> = []) {
         this.options = { ...this.defaults, ...options };
         this.population = population;
@@ -32,7 +30,6 @@ export class Genetic<T> {
 
     public async evolve() {
         this.scoreMap.clear();
-        this.duplicatesMap.clear();
 
         this.populate();
         this.shufflePopulation();
@@ -49,10 +46,6 @@ export class Genetic<T> {
     }
 
     private populate() {
-        if (this.population.length) {
-            this.population = this.scoredPopulation(Math.floor(this.options.populationSize / 4)).map(item => item.phenotype);
-        }
-
         while (this.population.length < this.options.populationSize) {
             this.population.push(this.options.randomFunction());
         }
