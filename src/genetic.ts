@@ -11,9 +11,9 @@ export interface GeneticOptions<T> {
 }
 
 export class Genetic<T> {
-    private options: GeneticOptions<T>;
-    private scoreMap: Map<T, number> = new Map();
-    private defaults: GeneticOptions<T> = {
+    protected options: GeneticOptions<T>;
+    protected scoreMap: Map<T, number> = new Map();
+    protected defaults: GeneticOptions<T> = {
         mutationFunction: (phenotype: T): T => phenotype,
         crossoverFunction: (a: T, b: T): T => (Math.random() > 0.5 ? a : b),
         fitnessFunction: async (phenotype: T): Promise<number> => 0,
@@ -23,7 +23,7 @@ export class Genetic<T> {
         mutateProbablity: 0.5,
     };
 
-    constructor(options: GeneticOptions<T>, private population: Array<T> = []) {
+    constructor(options: GeneticOptions<T>, protected population: Array<T> = []) {
         this.options = { ...this.defaults, ...options };
         this.population = population;
     }
@@ -45,29 +45,29 @@ export class Genetic<T> {
             .slice(-n);
     }
 
-    private populate() {
+    protected populate() {
         while (this.population.length < this.options.populationSize) {
             this.population.push(this.options.randomFunction());
         }
     }
 
-    private mutate(phenotype: T): T {
+    protected mutate(phenotype: T): T {
         return this.options.mutationFunction(merge({}, null, phenotype) as T);
     }
 
-    private async fitness(phenotype: T) {
+    protected async fitness(phenotype: T) {
         const score = await this.options.fitnessFunction(phenotype);
         this.scoreMap.set(phenotype, score);
         return score;
     }
 
-    private crossover(phenotype: T) {
+    protected crossover(phenotype: T) {
         phenotype = merge({}, null, phenotype) as T;
         const mate = get(this.population, `${Math.floor(Math.random() * this.population.length)}`);
         return this.options.crossoverFunction(phenotype, (mate as any) as T);
     }
 
-    private doesABeatB(a: T, b: T): Promise<boolean> {
+    protected doesABeatB(a: T, b: T): Promise<boolean> {
         if (this.options.doesABeatBFunction) {
             return this.options.doesABeatBFunction(a, b);
         } else {
@@ -77,7 +77,7 @@ export class Genetic<T> {
         }
     }
 
-    private async compete() {
+    protected async compete() {
         const tasks: Array<Promise<T>> = [];
 
         for (let idx = 0; idx < this.population.length - 1; idx += 2) {
@@ -87,7 +87,7 @@ export class Genetic<T> {
         this.population = await Promise.all(tasks);
     }
 
-    private async task(idx: number) {
+    protected async task(idx: number) {
         const phenotype = this.population[idx];
         const competitor = this.population[idx + 1];
 
@@ -105,7 +105,7 @@ export class Genetic<T> {
         }
     }
 
-    private shufflePopulation() {
+    protected shufflePopulation() {
         this.population = this.population.sort(() => Math.random() - 0.5);
     }
 }

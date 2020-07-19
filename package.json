@@ -20,7 +20,7 @@
   "main": "lib/genetic.cjs.js",
   "module": "lib/genetic.esm.js",
   "browser": "lib/genetic.umd.js",
-  "types": "lib/index.d.ts",
+  "types": "lib/genetic.d.ts",
   "dependencies": {
     "object-path-immutable": "^4.1.0"
   },
