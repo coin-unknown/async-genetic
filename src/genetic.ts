@@ -77,13 +77,10 @@ export class Genetic<T> {
         // cleanup score and sort
         this.population.length = 0;
 
-        for (let i = 0; i < this.entities.length; i++) {
-            const entity = this.entities[i];
-
-            this.population.push({ fitness: await fitnessFunction(entity), entity });
-        }
-
-        this.population.sort((a, b) => (optimize(a.fitness, b.fitness) ? -1 : 1));
+        const tasks = this.entities.map((entity) => fitnessFunction(entity));
+        this.population = await (await Promise.all(tasks))
+            .map((fitness, i) => ({ fitness, entity: this.entities[i] }))
+            .sort((a, b) => (optimize(a.fitness, b.fitness) ? -1 : 1));
 
         const popLen = this.population.length;
         const mean = this.getMean();
