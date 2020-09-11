@@ -19,8 +19,10 @@ export default [
             resolve(), // so Rollup can find `ms`
             commonjs(), // so Rollup can convert `ms` to an ES module
             typescript({
-                compilerOptions: {
-                    module: 'ESNext',
+                tsconfigOverride: {
+                    compilerOptions: {
+                        module: 'ESNext',
+                    },
                 },
             }),
             buble({
