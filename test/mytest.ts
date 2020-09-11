@@ -1,61 +1,92 @@
 import { Genetic } from '../src/genetic';
-const PhenotypeSize = 10;
+const solution = 'Insanity is doing the same thing over and over again and expecting different results';
 
-function mutationFunction(phenotype) {
-    var gene = Math.floor( Math.random() * phenotype.numbers.length );
-    phenotype.numbers[gene] += Math.random() * 20 - 10;
-    return phenotype;
+function randomString(len: number) {
+    let text = '';
+    const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < len; i++) text += charset.charAt(Math.floor(Math.random() * charset.length));
+
+    return text;
 }
 
-function crossoverFunction(a, b) {
-    function cloneJSON( item ) {
-        return JSON.parse ( JSON.stringify ( item ) )
+function replaceAt(str, index, character) {
+    return str.substr(0, index) + character + str.substr(index + character.length);
+}
+
+function randomFunction() {
+    // create random strings that are equal in length to solution
+    return randomString(solution.length);
+}
+
+function mutationFunction(entity: string) {
+    // chromosomal drift
+    const i = Math.floor(Math.random() * entity.length);
+    return replaceAt(entity, i, String.fromCharCode(entity.charCodeAt(i) + (Math.floor(Math.random() * 2) ? 1 : -1)));
+}
+
+function crossoverFunction(mother: string, father: string) {
+    // two-point crossover
+    const len = mother.length;
+    let ca = Math.floor(Math.random() * len);
+    let cb = Math.floor(Math.random() * len);
+    if (ca > cb) {
+        const tmp = cb;
+        cb = ca;
+        ca = tmp;
     }
 
-    var x = cloneJSON(a), cross = false;
+    const son = father.substr(0, ca) + mother.substr(ca, cb - ca) + father.substr(cb);
+    const daughter = mother.substr(0, ca) + father.substr(ca, cb - ca) + mother.substr(cb);
 
-    for (var i in a.numbers) {
-        if ( Math.random() * a.numbers.length <= 1 ) { cross = !cross }
-        if (cross) {
-            x.numbers[i] = b.numbers[i];
+    return [son, daughter];
+}
+
+async function fitnessFunction(entity: string) {
+    let fitness = 0;
+
+    let i;
+    for (i = 0; i < entity.length; ++i) {
+        // increase fitness for each character that matches
+        if (entity[i] == solution[i]) fitness += 1;
+
+        // award fractions of a point as we get warmer
+        fitness += (127 - Math.abs(entity.charCodeAt(i) - solution.charCodeAt(i))) / 50;
+    }
+
+    return fitness;
+}
+
+const GENERATIONS = 3000;
+const POPULATION = 2000;
+
+const population = [];
+
+for (let i = 0; i < POPULATION; i++) {
+    population.push(randomFunction());
+}
+
+const genetic = new Genetic<string>({
+    mutationFunction,
+    crossoverFunction,
+    fitnessFunction,
+    randomFunction,
+    populationSize: POPULATION,
+    fittestNSurvives: 1,
+});
+
+async function solve() {
+    genetic.seed();
+
+    for (let i = 0; i <= GENERATIONS; i++) {
+        console.count('gen');
+        await genetic.estimate();
+        genetic.breed();
+
+        if (genetic.best()[0] === solution) {
+            break;
         }
     }
-    return x;
+    console.log(genetic.best(100));
 }
 
-async function fitnessFunction(phenotype) {
-    var sumOfPowers = 0;
-    for (var i in phenotype.numbers) {
-        // assume perfect solution is '50.0' for all numbers
-        sumOfPowers += Math.pow( 50 - phenotype.numbers[i], 2);
-    }
-
-    return 1 / Math.sqrt(sumOfPowers);
-}
-
-function createEmptyPhenotype() {
-    var data = [];
-    for (var i = 0; i < PhenotypeSize; i += 1) {
-        data[i] = 0
-    }
-    return [{ numbers : data }]
-}
-
-var ga = new Genetic({
-    mutationFunction: mutationFunction,
-    crossoverFunction: crossoverFunction,
-    fitnessFunction: fitnessFunction,
-    populationSize: PhenotypeSize * 10
-}, createEmptyPhenotype());
-
-const start = Date.now();
-async function evolve() {
-  for( var i = 0 ; i < 20 * PhenotypeSize ; i++ ) {
-    await ga.evolve();
-  }
-
-  console.log("Duration: ", (Date.now() - start) / 1000);
-  console.log(ga.scoredPopulation(1)[0].phenotype.numbers);
-}
-
-evolve();
+solve();

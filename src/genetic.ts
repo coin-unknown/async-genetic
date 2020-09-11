@@ -1,111 +1,189 @@
-import { get, merge } from 'object-path-immutable';
+import { clone, Minimize, Maximize } from './utils';
 
 export interface GeneticOptions<T> {
     mutationFunction: (phenotype: T) => T;
-    crossoverFunction: (a: T, b: T) => T;
+    crossoverFunction: (a: T, b: T) => Array<T>;
     fitnessFunction: (phenotype: T) => Promise<number>;
-    doesABeatBFunction?: (a: T, b: T) => Promise<boolean>;
-    randomFunction?: () => T;
+    randomFunction: () => T;
     populationSize: number;
     mutateProbablity?: number;
+    crossoverProbablity?: number;
+    fittestNSurvives?: number;
+    select1?: (pop) => T;
+    select2?: (pop) => T;
+    optimize?: (scoreA: number, scoreB: number) => boolean;
+}
+
+export interface Phenotype<T> {
+    fitness: number;
+    entity: T;
 }
 
 export class Genetic<T> {
-    protected options: GeneticOptions<T>;
-    protected scoreMap: Map<T, number> = new Map();
-    protected defaults: GeneticOptions<T> = {
-        mutationFunction: (phenotype: T): T => phenotype,
-        crossoverFunction: (a: T, b: T): T => (Math.random() > 0.5 ? a : b),
-        fitnessFunction: async (phenotype: T): Promise<number> => 0,
-        randomFunction: (): T =>
-            this.mutate((get(this.population, `${Math.floor(Math.random() * this.population.length)}`) as any) as T),
-        populationSize: 100,
-        mutateProbablity: 0.5,
+    public stats = {};
+    public options: GeneticOptions<T>;
+
+    protected internalGenState = {}; /* Used for random linear */
+    private population: Array<Phenotype<T>> = [];
+
+    constructor(options: GeneticOptions<T>, private entities: Array<T> = []) {
+        const defaultOptions: Partial<GeneticOptions<T>> = {
+            populationSize: 250,
+            mutateProbablity: 0.2,
+            crossoverProbablity: 0.9,
+            fittestNSurvives: 1,
+            select1: Select.Tournament2,
+            select2: Select.Tournament2,
+            optimize: Optimize.Maximize,
+        };
+
+        this.options = { ...defaultOptions, ...options };
+    }
+
+    public seed(entities: Array<T> = []) {
+        this.entities = entities;
+
+        // seed the population
+        for (let i = 0; i < this.options.populationSize; ++i) {
+            this.entities.push(this.options.randomFunction());
+        }
+    }
+
+    public best(count = 1) {
+        return this.population.slice(0, count).map((ph) => ph.entity);
+    }
+
+    public breed() {
+        // crossover and mutate
+        const newPop = [];
+
+        // lets the best solution fall through
+        if (this.options.fittestNSurvives) {
+            newPop.push(...this.population.slice(0, this.options.fittestNSurvives).map((ph) => ph.entity));
+        }
+
+        // Lenght may be change dynamically, because fittest and some pairs from crossover
+        while (newPop.length < this.options.populationSize) {
+            newPop.push(...this.tryCrossover());
+        }
+
+        this.entities = newPop;
+    }
+
+    public async estimate() {
+        const { fitnessFunction, optimize } = this.options;
+        // reset for each generation
+        this.internalGenState = {};
+        // cleanup score and sort
+        this.population.length = 0;
+
+        for (let i = 0; i < this.entities.length; i++) {
+            const entity = this.entities[i];
+
+            this.population.push({ fitness: await fitnessFunction(entity), entity });
+        }
+
+        this.population.sort((a, b) => (optimize(a.fitness, b.fitness) ? -1 : 1));
+
+        const popLen = this.population.length;
+        const mean = this.getMean();
+
+        this.stats = {
+            maximum: this.population[0].fitness,
+            minimum: this.population[popLen - 1].fitness,
+            mean,
+            stdev: this.getStdev(mean),
+        };
+    }
+
+    private tryCrossover = () => {
+        const { crossoverProbablity, crossoverFunction } = this.options;
+        let selected = crossoverFunction && Math.random() <= crossoverProbablity ? this.selectPair() : this.selectOne();
+
+        if (selected.length === 2) {
+            selected = crossoverFunction(selected[0], selected[1]);
+        }
+
+        return selected.map(this.tryMutate);
     };
 
-    constructor(options: GeneticOptions<T>, protected population: Array<T> = []) {
-        this.options = { ...this.defaults, ...options };
-        this.population = population;
-    }
-
-    public async evolve() {
-        this.scoreMap.clear();
-
-        this.populate();
-        this.shufflePopulation();
-        this.compete();
-        return this;
-    }
-
-    public scoredPopulation(n = 0) {
-        return this.population
-            .map((phenotype) => ({ phenotype, score: this.scoreMap.get(phenotype) }))
-            .filter((a) => a.score)
-            .sort((a, b) => (a.score > b.score ? 1 : -1))
-            .slice(-n);
-    }
-
-    protected populate() {
-        while (this.population.length < this.options.populationSize) {
-            this.population.push(this.options.randomFunction());
-        }
-    }
-
-    protected mutate(phenotype: T): T {
-        return this.options.mutationFunction(merge({}, null, phenotype) as T);
-    }
-
-    protected async fitness(phenotype: T) {
-        const score = await this.options.fitnessFunction(phenotype);
-        this.scoreMap.set(phenotype, score);
-        return score;
-    }
-
-    protected crossover(phenotype: T) {
-        phenotype = merge({}, null, phenotype) as T;
-        const mate = get(this.population, `${Math.floor(Math.random() * this.population.length)}`);
-        return this.options.crossoverFunction(phenotype, (mate as any) as T);
-    }
-
-    protected doesABeatB(a: T, b: T): Promise<boolean> {
-        if (this.options.doesABeatBFunction) {
-            return this.options.doesABeatBFunction(a, b);
-        } else {
-            return Promise.all([this.fitness(a), this.fitness(b)]).then(([scoreA, scoreB]) => {
-                return scoreA >= scoreB;
-            });
-        }
-    }
-
-    protected async compete() {
-        const tasks: Array<Promise<T>> = [];
-
-        for (let idx = 0; idx < this.population.length - 1; idx += 2) {
-            tasks.push(this.task(idx));
+    private tryMutate = (entity: T) => {
+        // applies mutation based on mutation probability
+        if (this.options.mutationFunction && Math.random() <= this.options.mutateProbablity) {
+            return this.options.mutationFunction(entity);
         }
 
-        this.population = await Promise.all(tasks);
+        return entity;
+    };
+
+    /**
+     * Mean deviation
+     */
+    private getMean() {
+        return this.population.reduce((a, b) => a + b.fitness, 0) / this.population.length;
     }
 
-    protected async task(idx: number) {
-        const phenotype = this.population[idx];
-        const competitor = this.population[idx + 1];
+    /**
+     * Standart deviation
+     */
+    private getStdev(mean: number) {
+        const { population: pop } = this;
+        const l = pop.length;
 
-        const res = await this.doesABeatB(phenotype, competitor);
-        if (res) {
-            if (Math.random() < this.options.mutateProbablity) {
-                return this.mutate(phenotype);
-            }
-            else {
-                return this.crossover(phenotype);
-            }
-        }
-        else {
-            return competitor;
-        }
+        return Math.sqrt(pop.map(({ fitness }) => (fitness - mean) * (fitness - mean)).reduce((a, b) => a + b, 0) / l);
     }
 
-    protected shufflePopulation() {
-        this.population = this.population.sort(() => Math.random() - 0.5);
+    private selectOne() {
+        const { select1 } = this.options;
+
+        return [clone(select1.call(this, this.population))];
+    }
+
+    private selectPair() {
+        const { select2 } = this.options;
+
+        return [clone(select2.call(this, this.population)), clone(select2.call(this, this.population))];
     }
 }
+
+/** Utility */
+
+function Tournament2<T>(this: Genetic<T>, pop) {
+    const n = pop.length;
+    const a = pop[Math.floor(Math.random() * n)];
+    const b = pop[Math.floor(Math.random() * n)];
+
+    return this.options.optimize(a.fitness, b.fitness) ? a.entity : b.entity;
+}
+
+function Tournament3<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    const n = pop.length;
+    const a = pop[Math.floor(Math.random() * n)];
+    const b = pop[Math.floor(Math.random() * n)];
+    const c = pop[Math.floor(Math.random() * n)];
+    let best = this.options.optimize(a.fitness, b.fitness) ? a : b;
+    best = this.options.optimize(best.fitness, c.fitness) ? best : c;
+
+    return best.entity;
+}
+
+function Fittest<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    return pop[0].entity;
+}
+
+function Random<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    return pop[Math.floor(Math.random() * pop.length)].entity;
+}
+
+function RandomLinearRank<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    this.internalGenState['rlr'] = this.internalGenState['rlr'] || 0;
+    return pop[Math.floor(Math.random() * Math.min(pop.length, this.internalGenState['rlr']++))].entity;
+}
+
+function Sequential<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    this.internalGenState['seq'] = this.internalGenState['seq'] || 0;
+    return pop[this.internalGenState['seq']++ % pop.length].entity;
+}
+
+const Optimize = { Minimize, Maximize };
+const Select = { Tournament2, Tournament3, Fittest, Random, RandomLinearRank, Sequential };
