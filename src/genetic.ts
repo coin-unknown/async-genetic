@@ -1,5 +1,6 @@
 import { clone, Minimize, Maximize } from './utils';
 
+export const Select = { Tournament2, Tournament3, Fittest, Random, RandomLinearRank, Sequential };
 export interface GeneticOptions<T> {
     mutationFunction: (phenotype: T) => T;
     crossoverFunction: (a: T, b: T) => Array<T>;
@@ -183,4 +184,3 @@ function Sequential<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
 }
 
 const Optimize = { Minimize, Maximize };
-const Select = { Tournament2, Tournament3, Fittest, Random, RandomLinearRank, Sequential };
