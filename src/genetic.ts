@@ -1,4 +1,4 @@
-import { clone, Minimize, Maximize } from './utils';
+import { clone } from './utils';
 
 export const Select = { Tournament2, Tournament3, Fittest, Random, RandomLinearRank, Sequential };
 export interface GeneticOptions<T> {
@@ -12,7 +12,6 @@ export interface GeneticOptions<T> {
     fittestNSurvives?: number;
     select1?: (pop) => T;
     select2?: (pop) => T;
-    optimize?: (scoreA: number, scoreB: number) => boolean;
 }
 
 export interface Phenotype<T> {
@@ -23,7 +22,6 @@ export interface Phenotype<T> {
 export class Genetic<T> {
     public stats = {};
     public options: GeneticOptions<T>;
-
     protected internalGenState = {}; /* Used for random linear */
     private population: Array<Phenotype<T>> = [];
 
@@ -35,7 +33,6 @@ export class Genetic<T> {
             fittestNSurvives: 1,
             select1: Select.Tournament2,
             select2: Select.Tournament2,
-            optimize: Optimize.Maximize,
         };
 
         this.options = { ...defaultOptions, ...options };
@@ -80,7 +77,7 @@ export class Genetic<T> {
      * Estimate population before breeding
      */
     public async estimate() {
-        const { fitnessFunction, optimize } = this.options;
+        const { fitnessFunction } = this.options;
         // reset for each generation
         this.internalGenState = {};
         const tasks = await Promise.all(this.population.map(({ entity }) => fitnessFunction(entity)));
@@ -89,7 +86,7 @@ export class Genetic<T> {
             this.population[i].fitness = tasks[i];
         }
 
-        this.population = this.population.sort((a, b) => (optimize(a.fitness, b.fitness) ? -1 : 1));
+        this.population = this.population.sort((a, b) => (this.optimize(a.fitness, b.fitness) ? -1 : 1));
 
         const popLen = this.population.length;
         const mean = this.getMean();
@@ -101,6 +98,13 @@ export class Genetic<T> {
             stdev: this.getStdev(mean),
         };
     }
+
+    /**
+     * Sort algorythm
+     */
+    protected optimize = (a: number, b: number) => {
+        return a >= b;
+    };
 
     /**
      * Try cross a pair or one selected phenotypes
@@ -178,7 +182,7 @@ function Tournament2<T>(this: Genetic<T>, pop) {
     const a = pop[Math.floor(Math.random() * n)];
     const b = pop[Math.floor(Math.random() * n)];
 
-    return this.options.optimize(a.fitness, b.fitness) ? a.entity : b.entity;
+    return this.optimize(a.fitness, b.fitness) ? a.entity : b.entity;
 }
 
 function Tournament3<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
@@ -186,8 +190,8 @@ function Tournament3<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     const a = pop[Math.floor(Math.random() * n)];
     const b = pop[Math.floor(Math.random() * n)];
     const c = pop[Math.floor(Math.random() * n)];
-    let best = this.options.optimize(a.fitness, b.fitness) ? a : b;
-    best = this.options.optimize(best.fitness, c.fitness) ? best : c;
+    let best = this.optimize(a.fitness, b.fitness) ? a : b;
+    best = this.optimize(best.fitness, c.fitness) ? best : c;
 
     return best.entity;
 }
@@ -209,5 +213,3 @@ function Sequential<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     this.internalGenState['seq'] = this.internalGenState['seq'] || 0;
     return pop[this.internalGenState['seq']++ % pop.length].entity;
 }
-
-const Optimize = { Minimize, Maximize };
