@@ -1,4 +1,4 @@
-import { Genetic } from '../src/genetic';
+import { Genetic, Select } from '../src/genetic';
 const solution = 'Insanity is doing the same thing over and over again and expecting different results';
 
 function randomString(len: number) {
@@ -56,6 +56,16 @@ async function fitnessFunction(entity: string) {
     return fitness;
 }
 
+const lookup = new Set();
+const deduplicate = (str: string) => {
+    if (lookup.has(str)) {
+        return false;
+    } else {
+        lookup.add(str);
+        return true;
+    }
+};
+
 const GENERATIONS = 3000;
 const POPULATION = 2000;
 
@@ -72,6 +82,9 @@ const genetic = new Genetic<string>({
     randomFunction,
     populationSize: POPULATION,
     fittestNSurvives: 1,
+    select1: Select.Tournament2,
+    select2: Select.Tournament2,
+    deduplicate,
 });
 
 async function solve() {

@@ -12,6 +12,7 @@ export interface GeneticOptions<T> {
     fittestNSurvives?: number;
     select1?: (pop) => T;
     select2?: (pop) => T;
+    deduplicate?: (phenotype: T) => boolean;
 }
 
 export interface Phenotype<T> {
@@ -31,7 +32,7 @@ export class Genetic<T> {
             mutateProbablity: 0.2,
             crossoverProbablity: 0.9,
             fittestNSurvives: 1,
-            select1: Select.Tournament2,
+            select1: Select.Fittest,
             select2: Select.Tournament2,
         };
 
@@ -43,6 +44,7 @@ export class Genetic<T> {
      */
     public seed(entities: Array<T> = []) {
         this.population = entities.map((entity) => ({ fitness: null, entity }));
+
         // seed the population
         for (let i = 0; i < this.options.populationSize; ++i) {
             this.population.push({ fitness: null, entity: this.options.randomFunction() });
@@ -68,6 +70,11 @@ export class Genetic<T> {
         // Lenght may be change dynamically, because fittest and some pairs from crossover
         while (newPop.length < this.options.populationSize) {
             newPop.push(...this.tryCrossover().map((entity) => ({ fitness: null, entity })));
+        }
+
+        if (this.options.deduplicate) {
+            this.population = this.population.filter((ph) => this.options.deduplicate(ph.entity));
+            this.seed();
         }
 
         this.population = newPop;
