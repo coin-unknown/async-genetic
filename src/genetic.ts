@@ -52,7 +52,10 @@ export class Genetic<T> {
     }
 
     public best(count = 1) {
-        return this.population.slice(0, count).map((ph) => ph.entity);
+        return this.population
+            .filter((ph) => this.options.deduplicate(ph.entity))
+            .slice(0, count)
+            .map((ph) => ph.entity);
     }
 
     /**
