@@ -105,6 +105,7 @@ export class Genetic<T> {
         const mean = this.getMean();
 
         this.stats = {
+            population: this.population.length,
             maximum: this.population[0].fitness,
             minimum: this.population[popLen - 1].fitness,
             mean,
