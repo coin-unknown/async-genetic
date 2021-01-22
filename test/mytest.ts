@@ -1,3 +1,6 @@
+// benchmarked vs https://subprotocol.com/system/genetic-hello-world.html
+// local genetic is x2 faster
+
 import { Genetic, Select } from '../src/genetic';
 const solution = 'Insanity is doing the same thing over and over again and expecting different results';
 
@@ -55,19 +58,8 @@ async function fitnessFunction(entity: string) {
 
     return fitness;
 }
-
-const lookup = new Set();
-const deduplicate = (str: string) => {
-    if (lookup.has(str)) {
-        return false;
-    } else {
-        lookup.add(str);
-        return true;
-    }
-};
-
-const GENERATIONS = 3000;
-const POPULATION = 2000;
+const GENERATIONS = 4000;
+const POPULATION = 250;
 
 const population = [];
 
@@ -82,9 +74,8 @@ const genetic = new Genetic<string>({
     randomFunction,
     populationSize: POPULATION,
     fittestNSurvives: 1,
-    select1: Select.Tournament2,
-    select2: Select.Tournament2,
-    deduplicate,
+    select1: Select.FittestLinear,
+    select2: Select.Tournament3,
 });
 
 async function solve() {
@@ -95,11 +86,13 @@ async function solve() {
         await genetic.estimate();
         genetic.breed();
 
-        if (genetic.best()[0] === solution) {
+        const bestOne = genetic.best()[0];
+        console.log(bestOne);
+
+        if (bestOne === solution) {
             break;
         }
     }
-    console.log(genetic.best(100));
 }
 
 solve();

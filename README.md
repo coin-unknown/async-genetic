@@ -20,19 +20,25 @@ import { Genetic } from 'async-genetic';
 
 const config = {...};
 const population = [...];
-const genetic = new Genetic(config, population);
+const genetic = new Genetic(config);
+genetic.seed(population);
 
 ```
 The minimal configuration for constructing an GeneticAlgorithm calculator is like so:
 
 ```js
 const config = {
-    mutationFunction: aMutationFunctionYouSupply,
-    crossoverFunction: yourCrossoverFunction,
-    crossoverFunction: yourCrossoverFunction,
-    randomFunction: yourRandomFunction,
-    fitnessFunction: yourFitnessFunction, // async
-    populationSize: aDecimalNumberGreaterThanZero 	// defaults to 100
+    mutationFunction: (phenotype: T) => T; // you custom mutation fn
+    crossoverFunction: (a: T, b: T) => Array<T>; // you custom crossover fn
+    fitnessFunction: (phenotype: T) => Promise<number>; // // you custom fitness fn
+    randomFunction: () => T; // you custom random phenotype generator fn
+    populationSize: number; // constant size of population
+    mutateProbablity?: number; // perturb prob random phenotype DNA
+    crossoverProbablity?: number; // crossover prob
+    fittestNSurvives?: number; // good old boys, fittest are not crossing in current generation
+    select1?: (pop) => T; // Select one phenotype by Selection method e.g. Select.Random or Select.Fittest
+    select2?: (pop) => T; // Select for crossover by Selection method e.g. Select.Tournament2 or Select.Tournament3
+    deduplicate?: (phenotype: T) => boolean; // Remove duplicates (not recommended to use)
 }
 
 const settings = {...};
@@ -42,13 +48,13 @@ const genetic = new Genetic(config);
 
 That creates one instance of an GeneticAlgorithm calculator which uses the initial configuration you supply.  All configuration options are optional except *population*.  If you don't specify a crossover function then GeneticAlgorithm will only do mutations and similarly if you don't specify the mutation function it will only do crossovers.  If you don't specify either then no evolution will happen, go figure.
 
-### genetic.evolve( )
-Do one generation of evolution like so
+### genetic.estimate( )
+Estimate current generation by fitnessFunction
 ```js
-geneticalgorithm.evolve( )
+geneticalgorithm.estimate( )
 ```
-The *.evolve()* moves the calculator ahead by one generation. It is async function Depending on the population size and the speed of the functions you provide in the configuration this coupld be quick or take some time.
-*.evolve()* changes the geneticalgorithm and also returns it.  This is for simplicity so that you could do chain calls like so
+The *.estimate()* add score number per each phenotype in population
+### genetic.breed();
 ```js
 await genetic.evolve() // evolve does async
 await genetic.evolve()
@@ -56,11 +62,11 @@ genetic.scoredPopulation(2)
 ```
 to do two evolutions and then get the best N phenoTypes with scores (see *.scoredPopulation(N)* below).
 
-### geneticalgorithm.scoredPopulation(N)
+### genetic.best(N)
 Retrieve the Phenotype with the highest fitness score like so. You can get directly N best scored items
 ```js
-const best = geneticalgorithm.scoredPopulation(1)
-// best = { score: number, phenotype: any }
+const best = genetic.best(1)
+// best:T = {...};
 ```
 
 # Functions
@@ -104,15 +110,23 @@ async function fitnessFunction(phenotype) {
 }
 ```
 
-### doesABeatBFunction (phenoTypeA, phenoTypeB) [async]
-> Must return Promise with truthy or falsy
+### crossoverFunction (phenotypeA, phenotypeB)
+> Must return childs phenotypes after breeding phenotypeA and phenotypeB
 
-This function, if specified, overrides using simply the fitness function to compare two phenotypes.  There are situations where you will want to preserve a certain amount of genetic diversity and so your doesABeatBFunction can return false if the two phenotypes are too different.  When GeneticAlgorithm is comparing two phenoTypes it *only* tests if A can beat B and if so then B dies and is replaced with a mutant or crossover child of A.  If A cannot beat B then nothing happens.  This is an important note to consider.  Suppose A and B are very genetically different and you want to preserve diversity then in your *doesABeatBFunction* you would check how diverse A and B are and simply return falsy if it crosses your threshold.
-
-The default implementation if you don't supply one is:
 ```js
-async function doesABeatBFunction(phenoTypeA, phenoTypeB) {
-	return fitnessFunction(phenoTypeA) >= fitnessFunction(phenoTypeB)
+function crossoverFunction(mother: string, father: string) {
+    // two-point crossover
+    const len = mother.length;
+    let ca = Math.floor(Math.random() * len);
+    let cb = Math.floor(Math.random() * len);
+    if (ca > cb) {
+		[ca, cb] = [cb, ca];
+    }
+
+    const son = father.substr(0, ca) + mother.substr(ca, cb - ca) + father.substr(cb);
+    const daughter = mother.substr(0, ca) + father.substr(ca, cb - ca) + mother.substr(cb);
+
+    return [son, daughter];
 }
 ```
 
@@ -128,4 +142,20 @@ async function doesABeatBFunction(phenoTypeA, phenoTypeB) {
 | randomFunction | () => T | Function generate random phenotype to complete the generation |
 | populationSize | number | Number phenotypes in population |
 | mutateProbablity | number [0...1] | Each crossover may be changed to mutation with this chance |
+| fittestNSurvives | number [0...population.length -1] | Each generation fittest guys will survive |
+| select1 | Select | select one phenotype from population for mutate or cloning |
+| select2 | Select | select two or more phenotype from population for crossing over |
 | deduplicate | boolean | Remove duplicates from phenotypes |
+
+
+### Selection method
+> Should be used for select1, select2 parameters
+| Type | Description |
+| ------------- | ------------- |
+| Select.Random | Select random phenotype from population |
+| Select.Fittest | Select best one phenotype from population |
+| Select.FittestLinear | Select linear best one phenotypes from population |
+| Select.Tournament2 | Select 2 random phenotypes from population and take best of 2 |
+| Select.Tournament3 | Select 3 random phenotype from population and take best of 3|
+| Select.RandomLinearRank | Select random phenotype from population with linear rank |
+| Select.Sequential | Select phenotype from population by linear function |

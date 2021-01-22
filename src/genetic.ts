@@ -1,6 +1,6 @@
 import { clone } from './utils';
 
-export const Select = { Tournament2, Tournament3, Fittest, Random, RandomLinearRank, Sequential };
+export const Select = { Tournament2, Tournament3, Fittest, FittestLinear, Random, RandomLinearRank, Sequential };
 export interface GeneticOptions<T> {
     mutationFunction: (phenotype: T) => T;
     crossoverFunction: (a: T, b: T) => Array<T>;
@@ -70,7 +70,7 @@ export class Genetic<T> {
 
         // lets the best solution fall through
         if (this.options.fittestNSurvives) {
-            newPop.push(...this.getPurePopulation(this.options.fittestNSurvives));
+            newPop.push(...this.cutPopulation(this.options.fittestNSurvives));
         }
 
         // Lenght may be change dynamically, because fittest and some pairs from crossover
@@ -184,8 +184,8 @@ export class Genetic<T> {
     /**
      * Return population without an estimate (fitness)
      */
-    private getPurePopulation(count: number) {
-        return this.population.slice(0, count).map((ph) => ({ fitness: null, entity: ph.entity }));
+    private cutPopulation(count: number) {
+        return this.population.splice(0, count).map((ph) => ({ fitness: null, entity: ph.entity }));
     }
 }
 
@@ -212,6 +212,12 @@ function Tournament3<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
 
 function Fittest<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     return pop[0].entity;
+}
+
+function FittestLinear<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    this.internalGenState['flr'] = this.internalGenState['flr'] || 0;
+
+    return pop[this.internalGenState['flr']++].entity;
 }
 
 function Random<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
