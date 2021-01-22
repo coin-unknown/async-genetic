@@ -1,6 +1,15 @@
 import { clone } from './utils';
 
-export const Select = { Tournament2, Tournament3, Fittest, FittestLinear, Random, RandomLinearRank, Sequential };
+export const Select = {
+    Fittest,
+    FittestLinear,
+    FittestRandom,
+    Random,
+    RandomLinearRank,
+    Sequential,
+    Tournament2,
+    Tournament3,
+};
 export interface GeneticOptions<T> {
     mutationFunction: (phenotype: T) => T;
     crossoverFunction: (a: T, b: T) => Array<T>;
@@ -218,6 +227,10 @@ function FittestLinear<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     this.internalGenState['flr'] = this.internalGenState['flr'] || 0;
 
     return pop[this.internalGenState['flr']++].entity;
+}
+
+function FittestRandom<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
+    return pop[Math.floor(Math.random() * 11)].entity;
 }
 
 function Random<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
