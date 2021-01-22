@@ -150,6 +150,7 @@ function crossoverFunction(mother: string, father: string) {
 
 ### Selection method
 > Should be used for select1, select2 parameters
+
 | Type | Description |
 | ------------- | ------------- |
 | Select.Random | Select random phenotype from population |
