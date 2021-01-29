@@ -54,11 +54,24 @@ Estimate current generation by fitnessFunction
 geneticalgorithm.estimate( )
 ```
 The *.estimate()* add score number per each phenotype in population
-### genetic.breed();
+### genetic.breed(); 
 ```js
-await genetic.evolve() // evolve does async
-await genetic.evolve()
-genetic.scoredPopulation(2)
+async function solve() {
+    genetic.seed(); // filled by random function or passed pre defined population T[]
+
+    for (let i = 0; i <= GENERATIONS; i++) {
+        console.count('gen');
+        await genetic.estimate(); // estimate i generation
+        genetic.breed(); // breed (apply crossover or mutations)
+
+        const bestOne = genetic.best()[0]; // get best one
+        console.log(bestOne);
+
+        if (bestOne === solution) {
+            break;
+        }
+    }
+}
 ```
 to do two evolutions and then get the best N phenoTypes with scores (see *.scoredPopulation(N)* below).
 
@@ -66,7 +79,7 @@ to do two evolutions and then get the best N phenoTypes with scores (see *.score
 Retrieve the Phenotype with the highest fitness score like so. You can get directly N best scored items
 ```js
 const best = genetic.best(1)
-// best:T = {...};
+// best:T = [{...}];
 ```
 
 # Functions
@@ -138,7 +151,6 @@ function crossoverFunction(mother: string, father: string) {
 | mutationFunction | (phenotype: T) => T  | Mutate you phenotype as you describe  |
 | crossoverFunction | (a: T, b: T) => T | Cross two different phenotypes in to once (merge)  |
 | fitnessFunction | (phenotype: T) => Promise<number> | Train you phenotype to get result (scores more - better) |
-| doesABeatBFunction | (a: T, b: T) => Promise<boolean> | Check the a better than b, (Optional), default scoreA > scoreB |
 | randomFunction | () => T | Function generate random phenotype to complete the generation |
 | populationSize | number | Number phenotypes in population |
 | mutateProbablity | number [0...1] | Each crossover may be changed to mutation with this chance |
