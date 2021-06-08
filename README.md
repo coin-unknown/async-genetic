@@ -1,4 +1,4 @@
-# Blazing fast Genetic Algorythm JavaScript Implementation
+# Blazing fast Genetic Algorythm
 
 Genetic is a [node.js](http://nodejs.org) implementation of genetic optimization algorithms. It's pretty asyncronous, so you can use it in your web applications without risking of blocking your application.
 
