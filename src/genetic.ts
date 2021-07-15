@@ -32,8 +32,8 @@ export interface Phenotype<T> {
 export class Genetic<T> {
     public stats = {};
     public options: GeneticOptions<T>;
+    public population: Array<Phenotype<T>> = [];
     protected internalGenState = {}; /* Used for random linear */
-    private population: Array<Phenotype<T>> = [];
 
     constructor(options: GeneticOptions<T>) {
         const defaultOptions: Partial<GeneticOptions<T>> = {
