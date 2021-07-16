@@ -13,7 +13,6 @@ export interface GeneticOptions<T> {
     crossoverFunction: (a: T, b: T) => Promise<Array<T>>;
     fitnessFunction: (phenotype: T) => Promise<number>;
     randomFunction: () => Promise<T>;
-    resetFunction?: (entity: T) => Promise<T>;
     populationSize: number;
     mutateProbablity?: number;
     crossoverProbablity?: number;
@@ -42,7 +41,6 @@ export class Genetic<T> {
             fittestNSurvives: 1,
             select1: Select.Fittest,
             select2: Select.Tournament2,
-            resetFunction: async (entity: T) => entity,
         };
 
         this.options = { ...defaultOptions, ...options };
@@ -55,9 +53,7 @@ export class Genetic<T> {
         this.population = entities.map((entity) => ({ fitness: null, entity }));
 
         // seed the population
-        for (let i = 0; i < this.options.populationSize; ++i) {
-            this.population.push({ fitness: null, entity: await this.options.randomFunction() });
-        }
+        this.fill(this.population);
     }
 
     public best(count = 1) {
@@ -75,25 +71,29 @@ export class Genetic<T> {
      */
     public async breed() {
         // crossover and mutate
-        const newPop: Array<Phenotype<T>> = [];
+        let newPop: Array<Phenotype<T>> = [];
 
         // lets the best solution fall through
         if (this.options.fittestNSurvives) {
-            newPop.push(...this.cutPopulation(this.options.fittestNSurvives));
+            const cutted = this.cutPopulation(this.options.fittestNSurvives);
+
+            for (const item of cutted) {
+                newPop.push({ ...item, fitness: null });
+            }
         }
 
         // Lenght may be change dynamically, because fittest and some pairs from crossover
-        while (newPop.length < this.options.populationSize) {
+        while (newPop.length <= this.options.populationSize) {
             const crossed = await this.tryCrossover();
 
             newPop.push(...crossed.map((entity) => ({ fitness: null, entity })));
         }
 
         if (this.options.deduplicate) {
-            this.population = this.population.filter((ph) => this.options.deduplicate(ph.entity));
-            this.seed();
+            newPop = newPop.filter((ph) => this.options.deduplicate(ph.entity));
         }
 
+        await this.fill(newPop);
         this.population = newPop;
     }
 
@@ -131,6 +131,15 @@ export class Genetic<T> {
         return a >= b;
     };
 
+    /** Fill population if is not full */
+    private async fill(arr: Phenotype<T>[]) {
+        if (arr.length < this.options.populationSize) {
+            for (let i = arr.length - 1; i < this.options.populationSize; i++) {
+                arr.push({ entity: await this.options.randomFunction(), fitness: null });
+            }
+        }
+    }
+
     /**
      * Try cross a pair or one selected phenotypes
      */
@@ -138,7 +147,7 @@ export class Genetic<T> {
         const { crossoverProbablity, crossoverFunction } = this.options;
         let selected = crossoverFunction && Math.random() <= crossoverProbablity ? this.selectPair() : this.selectOne();
 
-        if (selected.length === 2) {
+        if (selected.length > 1) {
             selected = await crossoverFunction(selected[0], selected[1]);
         }
 
@@ -158,7 +167,7 @@ export class Genetic<T> {
             return this.options.mutationFunction(entity);
         }
 
-        return this.options.resetFunction(entity);
+        return entity;
     };
 
     /**
@@ -200,7 +209,7 @@ export class Genetic<T> {
      * Return population without an estimate (fitness)
      */
     private cutPopulation(count: number) {
-        return this.population.splice(0, count).map((ph) => ({ fitness: null, entity: ph.entity }));
+        return this.population.slice(0, count).map((ph) => ({ fitness: null, entity: ph.entity }));
     }
 }
 
