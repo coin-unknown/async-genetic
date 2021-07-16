@@ -15,6 +15,7 @@ export interface GeneticOptions<T> {
     crossoverFunction: (a: T, b: T) => Promise<Array<T>>;
     fitnessFunction: (phenotype: T) => Promise<number>;
     randomFunction: () => Promise<T>;
+    resetFunction?: (entity: T) => Promise<T>;
     populationSize: number;
     mutateProbablity?: number;
     crossoverProbablity?: number;
@@ -43,6 +44,7 @@ export class Genetic<T> {
             fittestNSurvives: 1,
             select1: Select.Fittest,
             select2: Select.Tournament2,
+            resetFunction: async (entity: T) => entity,
         };
 
         this.options = { ...defaultOptions, ...options };
@@ -158,7 +160,7 @@ export class Genetic<T> {
             return this.options.mutationFunction(entity);
         }
 
-        return entity;
+        return this.options.resetFunction(entity);
     };
 
     /**
