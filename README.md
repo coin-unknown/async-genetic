@@ -21,17 +21,17 @@ import { Genetic } from 'async-genetic';
 const config = {...};
 const population = [...];
 const genetic = new Genetic(config);
-genetic.seed(population);
+await genetic.seed(population);
 
 ```
 The minimal configuration for constructing an GeneticAlgorithm calculator is like so:
 
 ```js
 const config = {
-    mutationFunction: (phenotype: T) => T; // you custom mutation fn
+    mutationFunction: (phenotype: T) => Promise<T>; // you custom mutation fn
     crossoverFunction: (a: T, b: T) => Array<T>; // you custom crossover fn
     fitnessFunction: (phenotype: T) => Promise<number>; // // you custom fitness fn
-    randomFunction: () => T; // you custom random phenotype generator fn
+    randomFunction: () => Promise<T>; // you custom random phenotype generator fn
     populationSize: number; // constant size of population
     mutateProbablity?: number; // perturb prob random phenotype DNA
     crossoverProbablity?: number; // crossover prob
@@ -51,7 +51,7 @@ That creates one instance of an GeneticAlgorithm calculator which uses the initi
 ### genetic.estimate( )
 Estimate current generation by fitnessFunction
 ```js
-geneticalgorithm.estimate( )
+await geneticalgorithm.estimate( )
 ```
 The *.estimate()* add score number per each phenotype in population
 ### genetic.breed(); 
@@ -90,7 +90,7 @@ This is the specification of the configuration functions you pass to GeneticAlgo
 
 The mutation function that you provide.  It is a synchronous function that mutates the phenotype that you provide like so:
 ```js
-function mutationFunction (oldPhenotype) {
+async function mutationFunction (oldPhenotype) {
 	var resultPhenotype = {}
 	// use oldPhenotype and some random
 	// function to make a change to your
@@ -104,7 +104,7 @@ function mutationFunction (oldPhenotype) {
 
 The crossover function that you provide.  It is a synchronous function that swaps random sections between two phenotypes.  Construct it like so:
 ```js
-function crossoverFunction(phenoTypeA, phenoTypeB) {
+async function crossoverFunction(phenoTypeA, phenoTypeB) {
 	var result = {}
 	//  result should me created by merge phenoTypeA and phenoTypeB in custom rules
 	return result;
@@ -127,7 +127,7 @@ async function fitnessFunction(phenotype) {
 > Must return childs phenotypes after breeding phenotypeA and phenotypeB
 
 ```js
-function crossoverFunction(mother: string, father: string) {
+async function crossoverFunction(mother: string, father: string) {
     // two-point crossover
     const len = mother.length;
     let ca = Math.floor(Math.random() * len);
@@ -148,10 +148,10 @@ function crossoverFunction(mother: string, father: string) {
 
 | Parameter  | Type | Description |
 | ------------- | ------------- | ------------- |
-| mutationFunction | (phenotype: T) => T  | Mutate you phenotype as you describe  |
-| crossoverFunction | (a: T, b: T) => T | Cross two different phenotypes in to once (merge)  |
+| mutationFunction | (phenotype: T) => Promise<T>  | Mutate you phenotype as you describe  |
+| crossoverFunction | (a: T, b: T) => Promise<T> | Cross two different phenotypes in to once (merge)  |
 | fitnessFunction | (phenotype: T) => Promise<number> | Train you phenotype to get result (scores more - better) |
-| randomFunction | () => T | Function generate random phenotype to complete the generation |
+| randomFunction | () => Promise<T> | Function generate random phenotype to complete the generation |
 | populationSize | number | Number phenotypes in population |
 | mutateProbablity | number [0...1] | Each crossover may be changed to mutation with this chance |
 | fittestNSurvives | number [0...population.length -1] | Each generation fittest guys will survive |
