@@ -20,6 +20,7 @@ export interface GeneticOptions<T> {
     select1?: (pop: Array<Phenotype<T>>) => T;
     select2?: (pop: Array<Phenotype<T>>) => T;
     deduplicate?: (phenotype: T) => boolean;
+    optimize?: (a: Phenotype<T>, b: Phenotype<T>) => boolean;
 }
 
 export interface Phenotype<T> {
@@ -41,6 +42,9 @@ export class Genetic<T> {
             fittestNSurvives: 1,
             select1: Select.Fittest,
             select2: Select.Tournament2,
+            optimize: (phenotypeA: Phenotype<T>, phenotypeB: Phenotype<T>) => {
+                return phenotypeA.fitness >= phenotypeB.fitness;
+            },
         };
 
         this.options = { ...defaultOptions, ...options };
@@ -110,7 +114,7 @@ export class Genetic<T> {
             this.population[i].fitness = tasks[i];
         }
 
-        this.population = this.population.sort((a, b) => (this.optimize(a.fitness, b.fitness) ? -1 : 1));
+        this.population = this.population.sort((a, b) => (this.options.optimize(a, b) ? -1 : 1));
 
         const popLen = this.population.length;
         const mean = this.getMean();
@@ -123,13 +127,6 @@ export class Genetic<T> {
             stdev: this.getStdev(mean),
         };
     }
-
-    /**
-     * Sort algorythm
-     */
-    protected optimize = (a: number, b: number) => {
-        return a >= b;
-    };
 
     /** Fill population if is not full */
     private async fill(arr: Phenotype<T>[]) {
@@ -215,12 +212,12 @@ export class Genetic<T> {
 
 /** Utility */
 
-function Tournament2<T>(this: Genetic<T>, pop) {
+function Tournament2<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     const n = pop.length;
     const a = pop[Math.floor(Math.random() * n)];
     const b = pop[Math.floor(Math.random() * n)];
 
-    return this.optimize(a.fitness, b.fitness) ? a.entity : b.entity;
+    return this.options.optimize(a, b) ? a.entity : b.entity;
 }
 
 function Tournament3<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
@@ -228,8 +225,8 @@ function Tournament3<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     const a = pop[Math.floor(Math.random() * n)];
     const b = pop[Math.floor(Math.random() * n)];
     const c = pop[Math.floor(Math.random() * n)];
-    let best = this.optimize(a.fitness, b.fitness) ? a : b;
-    best = this.optimize(best.fitness, c.fitness) ? best : c;
+    let best = this.options.optimize(a, b) ? a : b;
+    best = this.options.optimize(best, c) ? best : c;
 
     return best.entity;
 }
