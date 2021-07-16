@@ -16,18 +16,18 @@ function replaceAt(str, index, character) {
     return str.substr(0, index) + character + str.substr(index + character.length);
 }
 
-function randomFunction() {
+async function randomFunction() {
     // create random strings that are equal in length to solution
     return randomString(solution.length);
 }
 
-function mutationFunction(entity: string) {
+async function mutationFunction(entity: string) {
     // chromosomal drift
     const i = Math.floor(Math.random() * entity.length);
     return replaceAt(entity, i, String.fromCharCode(entity.charCodeAt(i) + (Math.floor(Math.random() * 2) ? 1 : -1)));
 }
 
-function crossoverFunction(mother: string, father: string) {
+async function crossoverFunction(mother: string, father: string) {
     // two-point crossover
     const len = mother.length;
     let ca = Math.floor(Math.random() * len);
@@ -84,7 +84,7 @@ async function solve() {
     for (let i = 0; i <= GENERATIONS; i++) {
         console.count('gen');
         await genetic.estimate();
-        genetic.breed();
+        await genetic.breed();
 
         const bestOne = genetic.best()[0];
         console.log(bestOne);
