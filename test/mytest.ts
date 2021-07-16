@@ -79,7 +79,7 @@ const genetic = new Genetic<string>({
 });
 
 async function solve() {
-    genetic.seed();
+    await genetic.seed();
 
     for (let i = 0; i <= GENERATIONS; i++) {
         console.count('gen');

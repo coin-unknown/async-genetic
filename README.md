@@ -29,7 +29,7 @@ The minimal configuration for constructing an GeneticAlgorithm calculator is lik
 ```js
 const config = {
     mutationFunction: (phenotype: T) => Promise<T>; // you custom mutation fn
-    crossoverFunction: (a: T, b: T) => Array<T>; // you custom crossover fn
+    crossoverFunction: (a: T, b: T) => Promise<Array<T>>; // you custom crossover fn
     fitnessFunction: (phenotype: T) => Promise<number>; // // you custom fitness fn
     randomFunction: () => Promise<T>; // you custom random phenotype generator fn
     populationSize: number; // constant size of population
@@ -57,12 +57,12 @@ The *.estimate()* add score number per each phenotype in population
 ### genetic.breed(); 
 ```js
 async function solve() {
-    genetic.seed(); // filled by random function or passed pre defined population T[]
+    await genetic.seed(); // filled by random function or passed pre defined population T[]
 
     for (let i = 0; i <= GENERATIONS; i++) {
         console.count('gen');
         await genetic.estimate(); // estimate i generation
-        genetic.breed(); // breed (apply crossover or mutations)
+        await genetic.breed(); // breed (apply crossover or mutations)
 
         const bestOne = genetic.best()[0]; // get best one
         console.log(bestOne);
@@ -149,7 +149,7 @@ async function crossoverFunction(mother: string, father: string) {
 | Parameter  | Type | Description |
 | ------------- | ------------- | ------------- |
 | mutationFunction | (phenotype: T) => Promise<T>  | Mutate you phenotype as you describe  |
-| crossoverFunction | (a: T, b: T) => Promise<T> | Cross two different phenotypes in to once (merge)  |
+| crossoverFunction | (a: T, b: T) => Promise<Array<T>> | Cross two different phenotypes in to once (merge)  |
 | fitnessFunction | (phenotype: T) => Promise<number> | Train you phenotype to get result (scores more - better) |
 | randomFunction | () => Promise<T> | Function generate random phenotype to complete the generation |
 | populationSize | number | Number phenotypes in population |
