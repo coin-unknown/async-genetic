@@ -1,5 +1,3 @@
-import { clone } from './utils';
-
 export const Select = {
     Fittest,
     FittestLinear,
@@ -20,8 +18,8 @@ export interface GeneticOptions<T> {
     mutateProbablity?: number;
     crossoverProbablity?: number;
     fittestNSurvives?: number;
-    select1?: (pop) => T;
-    select2?: (pop) => T;
+    select1?: (pop: Array<Phenotype<T>>) => T;
+    select2?: (pop: Array<Phenotype<T>>) => T;
     deduplicate?: (phenotype: T) => boolean;
 }
 
@@ -186,7 +184,7 @@ export class Genetic<T> {
     private selectOne(): T[] {
         const { select1 } = this.options;
 
-        return [clone(select1.call(this, this.population))];
+        return [select1.call(this, this.population)];
     }
 
     /**
@@ -195,7 +193,7 @@ export class Genetic<T> {
     private selectPair(): T[] {
         const { select2 } = this.options;
 
-        return [clone(select2.call(this, this.population)), clone(select2.call(this, this.population))];
+        return [select2.call(this, this.population), select2.call(this, this.population)];
     }
 
     /**
