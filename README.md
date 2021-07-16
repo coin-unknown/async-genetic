@@ -157,6 +157,7 @@ async function crossoverFunction(mother: string, father: string) {
 | fittestNSurvives | number [0...population.length -1] | Each generation fittest guys will survive |
 | select1 | Select | select one phenotype from population for mutate or cloning |
 | select2 | Select | select two or more phenotype from population for crossing over |
+| optimize | (a: T, b:T) => boolean  | order function for popultaion |
 | deduplicate | boolean | Remove duplicates from phenotypes |
 
 
