@@ -57,7 +57,7 @@ export class Genetic<T> {
         this.population = entities.map((entity) => ({ fitness: null, entity }));
 
         // seed the population
-        this.fill(this.population);
+        return this.fill(this.population);
     }
 
     public best(count = 1) {
