@@ -236,13 +236,13 @@ function Fittest<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
 }
 
 function FittestLinear<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
-    this.internalGenState['flr'] = this.internalGenState['flr'] || 0;
+    this.internalGenState['flr'] = this.internalGenState['flr'] >= pop.length ? 0 : this.internalGenState['flr'] || 0;
 
     return pop[this.internalGenState['flr']++].entity;
 }
 
 function FittestRandom<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
-    return pop[Math.floor(Math.random() * 11)].entity;
+    return pop[Math.floor(Math.random() * pop.length * 0.2)].entity;
 }
 
 function Random<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
@@ -250,11 +250,13 @@ function Random<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
 }
 
 function RandomLinearRank<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
-    this.internalGenState['rlr'] = this.internalGenState['rlr'] || 0;
+    this.internalGenState['rlr'] = this.internalGenState['rlr'] >= pop.length ? 0 : this.internalGenState['rlr'] || 0;
+
     return pop[Math.floor(Math.random() * Math.min(pop.length, this.internalGenState['rlr']++))].entity;
 }
 
 function Sequential<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
-    this.internalGenState['seq'] = this.internalGenState['seq'] || 0;
+    this.internalGenState['seq'] = this.internalGenState['seq'] >= pop.length ? 0 : this.internalGenState['seq'] || 0;
+
     return pop[this.internalGenState['seq']++ % pop.length].entity;
 }
