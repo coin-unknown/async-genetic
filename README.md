@@ -30,7 +30,7 @@ The minimal configuration for constructing an GeneticAlgorithm calculator is lik
 const config = {
     mutationFunction: (phenotype: T) => Promise<T>; // you custom mutation fn
     crossoverFunction: (a: T, b: T) => Promise<Array<T>>; // you custom crossover fn
-    fitnessFunction: (phenotype: T) => Promise<number>; // // you custom fitness fn
+    fitnessFunction: (phenotype: T) => Promise<{ fitness: number, state?: any }>; // // you custom fitness fn
     randomFunction: () => Promise<T>; // you custom random phenotype generator fn
     populationSize: number; // constant size of population
     mutateProbablity?: number; // perturb prob random phenotype DNA
@@ -119,7 +119,7 @@ async function fitnessFunction(phenotype) {
 	var fitness = 0
 	// use phenotype and possibly some other information
 	// to determine the fitness number.  Higher is better, lower is worse.
-	return fitness;
+	return { fitness, state: { foo: 'bar' } };
 }
 ```
 
