@@ -67,7 +67,7 @@ async function solve() {
         const bestOne = genetic.best()[0]; // get best one
         console.log(bestOne);
 
-        if (bestOne === solution) {
+        if (bestOne.entity === solution) {
             break;
         }
     }
@@ -79,7 +79,7 @@ to do two evolutions and then get the best N phenoTypes with scores (see *.score
 Retrieve the Phenotype with the highest fitness score like so. You can get directly N best scored items
 ```js
 const best = genetic.best(1)
-// best:T = [{...}];
+// best = [{...}];
 ```
 
 # Functions
