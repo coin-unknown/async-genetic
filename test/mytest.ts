@@ -83,12 +83,12 @@ async function solve() {
     for (let i = 0; i <= GENERATIONS; i++) {
         console.count('gen');
         await genetic.estimate();
+        const bestOne = genetic.best()[0];
+        console.log(`${bestOne.entity} - ${bestOne.fitness}`);
+
         await genetic.breed();
 
-        const bestOne = genetic.best()[0];
-        console.log(bestOne);
-
-        if (bestOne === solution) {
+        if (bestOne.entity === solution) {
             break;
         }
     }

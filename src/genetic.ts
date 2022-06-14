@@ -62,13 +62,7 @@ export class Genetic<T> {
     }
 
     public best(count = 1) {
-        let population = this.population;
-
-        if (this.options.deduplicate) {
-            population = this.population.filter((ph) => this.options.deduplicate(ph.entity));
-        }
-
-        return population.slice(0, count).map((ph) => ph.entity);
+        return this.population.slice(0, count);
     }
 
     /**
