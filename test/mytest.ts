@@ -47,8 +47,7 @@ async function crossoverFunction(mother: string, father: string) {
 async function fitnessFunction(entity: string) {
     let fitness = 0;
 
-    let i;
-    for (i = 0; i < entity.length; ++i) {
+    for (let i = 0; i < entity.length; ++i) {
         // increase fitness for each character that matches
         if (entity[i] == solution[i]) fitness += 1;
 
@@ -56,7 +55,7 @@ async function fitnessFunction(entity: string) {
         fitness += (127 - Math.abs(entity.charCodeAt(i) - solution.charCodeAt(i))) / 50;
     }
 
-    return fitness;
+    return { fitness };
 }
 const GENERATIONS = 4000;
 const POPULATION = 250;
