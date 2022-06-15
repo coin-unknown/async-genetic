@@ -112,7 +112,7 @@ export class Genetic<T> {
             target.state = tasks[i].state;
         }
 
-        this.population = this.population.sort((a, b) => (this.options.optimize(a, b) ? -1 : 1));
+        this.reorderPopulation();
 
         const popLen = this.population.length;
         const mean = this.getMean();
@@ -124,6 +124,13 @@ export class Genetic<T> {
             mean,
             stdev: this.getStdev(mean),
         };
+    }
+
+    /**
+     * Appli population sorting
+     */
+    public reorderPopulation() {
+        this.population = this.population.sort((a, b) => (this.options.optimize(a, b) ? -1 : 1));
     }
 
     /** Fill population if is not full */

@@ -17,10 +17,10 @@
   "bugs": {
     "url": "https://github.com/BusinessDuck/async-geneticissues"
   },
-  "main": "lib/genetic.cjs.js",
-  "module": "lib/genetic.esm.js",
-  "browser": "lib/genetic.umd.js",
-  "types": "lib/genetic.d.ts",
+  "main": "lib/index.cjs.js",
+  "module": "lib/index.esm.js",
+  "browser": "lib/index.umd.js",
+  "types": "lib/index.d.ts",
   "dependencies": {
     "object-path-immutable": "^4.1.0"
   },
