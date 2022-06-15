@@ -29,6 +29,6 @@ function average(arr: number[]) {
     return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-function isWhatPercentOf(numA, numB) {
-    return (numA / numB) * 100;
+function isWhatPercentOf(numA: number, numB: number) {
+    return (1 - numA / numB) * 100;
 }
