@@ -82,6 +82,8 @@ export async function classicGenetic(log?: boolean) {
         fittestNSurvives: 1,
         select1: Select.FittestLinear,
         select2: Select.Tournament3,
+        mutateProbablity: 0.8,
+        crossoverProbablity: 0.8,
     });
 
     async function solve() {
