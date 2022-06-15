@@ -12,6 +12,7 @@ export const MigrateSelec = {
 export interface IlandGeneticModelOptions<T> {
     ilandCount: number;
     migrationProbability: number;
+    continentCrossGeneration: number;
     migrationFunction: (pop: Array<Phenotype<T>>) => number;
 }
 
@@ -24,13 +25,16 @@ export class IlandGeneticModel<T> {
     protected internalGenState = {}; /* Used for random linear */
 
     private ilands: Array<Genetic<T>> = [];
+    private continent: Genetic<T>;
     private options: IlandGeneticModelOptions<T>;
     private geneticOptions: GeneticOptions<T>;
+    private generations = 0;
 
     constructor(options: Partial<IlandGeneticModelOptions<T>>, geneticOptions: GeneticOptions<T>) {
         const defaultOptions: IlandGeneticModelOptions<T> = {
             ilandCount: 6,
             migrationProbability: 0.05,
+            continentCrossGeneration: 10,
             migrationFunction: MigrateSelec.Random,
         };
 
@@ -66,7 +70,7 @@ export class IlandGeneticModel<T> {
             activeIland++;
 
             // Circullar reset index
-            if (activeIland > this.ilands.length - 1) {
+            if (activeIland >= this.ilands.length) {
                 activeIland = 0;
             }
         }
@@ -88,11 +92,16 @@ export class IlandGeneticModel<T> {
      */
     public async breed() {
         this.migration();
+        this.generations++;
 
-        for (let i = 0; i < this.options.ilandCount; i++) {
-            const iland = this.ilands[i];
+        if (this.options.continentCrossGeneration && this.generations % this.options.continentCrossGeneration === 0) {
+            await this.continentalBreed();
+        } else {
+            for (let i = 0; i < this.options.ilandCount; i++) {
+                const iland = this.ilands[i];
 
-            await iland.breed();
+                await iland.breed();
+            }
         }
     }
 
@@ -126,6 +135,41 @@ export class IlandGeneticModel<T> {
         }
 
         this.reorderIlands();
+    }
+
+    /**
+     * Continental orgasmic breed
+     */
+    private async continentalBreed() {
+        const totalPopulation: Array<Phenotype<T>> = [];
+
+        for (let i = 0; i < this.options.ilandCount; i++) {
+            const iland = this.ilands[i];
+
+            // Copy and reset population on iland
+            totalPopulation.push(...iland.population);
+            iland.population = [];
+        }
+
+        this.continent.population = totalPopulation;
+
+        await this.continent.breed();
+        await this.continent.estimate();
+        await this.continent.breed();
+
+        let activeIland = 0;
+
+        while (this.continent.population.length) {
+            const phenotype = this.continent.population.pop();
+            const iland = this.ilands[activeIland];
+
+            iland.population.push(phenotype);
+            activeIland++;
+
+            if (activeIland >= this.options.ilandCount) {
+                activeIland = 0;
+            }
+        }
     }
 
     /**

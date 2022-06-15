@@ -89,6 +89,7 @@ export async function ilandGenetic(log: boolean) {
         ilandCount: 8,
         migrationProbability: 0.1,
         migrationFunction: MigrateSelec.FittestLinear,
+        continentCrossGeneration: 10,
     };
 
     const genetic = new IlandGeneticModel<string>(ilandOptions, geneticOptions);
