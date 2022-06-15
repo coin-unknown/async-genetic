@@ -86,8 +86,8 @@ export async function ilandGenetic(log: boolean) {
     };
 
     const ilandOptions: IlandGeneticModelOptions<string> = {
-        ilandCount: 6,
-        migrationProbability: 0.05,
+        ilandCount: 8,
+        migrationProbability: 0.1,
         migrationFunction: MigrateSelec.FittestLinear,
     };
 
@@ -102,6 +102,7 @@ export async function ilandGenetic(log: boolean) {
             }
 
             await genetic.estimate();
+
             const bestOne = genetic.best()[0];
 
             if (log) {

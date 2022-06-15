@@ -36,18 +36,25 @@ export class IlandGeneticModel<T> {
 
         this.options = { ...defaultOptions, ...options };
         this.geneticOptions = {
+            optimize: (phenotypeA: Phenotype<T>, phenotypeB: Phenotype<T>) => {
+                return phenotypeA.fitness >= phenotypeB.fitness;
+            },
             ...geneticOptions,
             // Reduce population size for each iland (sum of all phenotypes should be equal to total population count)
             populationSize: Math.round(geneticOptions.populationSize / this.options.ilandCount),
         };
 
         this.createIlands();
+        this.continent = new Genetic<T>(geneticOptions);
     }
 
     /**
      * Get best results from eash ilands (one by one)
+     * count should be more than ilands count
      */
     public best(count = 5): Array<Phenotype<T>> {
+        count = Math.max(this.options.ilandCount, count);
+
         const results: Array<Phenotype<T>> = [];
         const idxMap = {};
         let activeIland = 0;
@@ -64,7 +71,7 @@ export class IlandGeneticModel<T> {
             }
         }
 
-        return results;
+        return results.sort((a, b) => (this.geneticOptions.optimize(a, b) ? -1 : 1));
     }
 
     /**
@@ -80,9 +87,10 @@ export class IlandGeneticModel<T> {
      * Breed each iland
      */
     public async breed() {
+        this.migration();
+
         for (let i = 0; i < this.options.ilandCount; i++) {
             const iland = this.ilands[i];
-            this.migration();
 
             await iland.breed();
         }
