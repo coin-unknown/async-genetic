@@ -87,9 +87,12 @@ export async function ilandGenetic(log: boolean) {
 
     const ilandOptions: IlandGeneticModelOptions<string> = {
         ilandCount: 8,
+        ilandMutationProbability: 0.8,
+        ilandCrossoverProbability: 0.8,
         migrationProbability: 0.1,
         migrationFunction: MigrateSelec.FittestLinear,
         continentCrossGeneration: 10,
+        continentGenerations: 10,
     };
 
     const genetic = new IlandGeneticModel<string>(ilandOptions, geneticOptions);

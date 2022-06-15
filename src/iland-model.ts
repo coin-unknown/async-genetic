@@ -11,8 +11,11 @@ export const MigrateSelec = {
 
 export interface IlandGeneticModelOptions<T> {
     ilandCount: number;
+    ilandMutationProbability: number;
+    ilandCrossoverProbability: number;
     migrationProbability: number;
     continentCrossGeneration: number;
+    continentGenerations: number;
     migrationFunction: (pop: Array<Phenotype<T>>) => number;
 }
 
@@ -33,8 +36,11 @@ export class IlandGeneticModel<T> {
     constructor(options: Partial<IlandGeneticModelOptions<T>>, geneticOptions: GeneticOptions<T>) {
         const defaultOptions: IlandGeneticModelOptions<T> = {
             ilandCount: 6,
+            ilandMutationProbability: 0.5,
+            ilandCrossoverProbability: 0.8,
             migrationProbability: 0.05,
             continentCrossGeneration: 10,
+            continentGenerations: 5,
             migrationFunction: MigrateSelec.Random,
         };
 
@@ -44,6 +50,10 @@ export class IlandGeneticModel<T> {
                 return phenotypeA.fitness >= phenotypeB.fitness;
             },
             ...geneticOptions,
+            // Should be more than continent, because environment are special
+            mutateProbablity: options.ilandMutationProbability,
+            // Should be more than continent, because area is small
+            crossoverProbablity: options.ilandCrossoverProbability,
             // Reduce population size for each iland (sum of all phenotypes should be equal to total population count)
             populationSize: Math.round(geneticOptions.populationSize / this.options.ilandCount),
         };
@@ -154,8 +164,11 @@ export class IlandGeneticModel<T> {
         this.continent.population = totalPopulation;
 
         await this.continent.breed();
-        await this.continent.estimate();
-        await this.continent.breed();
+
+        for (let i = 0; i < this.options.continentGenerations; i++) {
+            await this.continent.estimate();
+            await this.continent.breed();
+        }
 
         let activeIland = 0;
 
