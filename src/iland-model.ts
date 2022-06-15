@@ -77,6 +77,8 @@ export class IlandGeneticModel<T> {
     public async breed() {
         for (let i = 0; i < this.options.ilandCount; i++) {
             const iland = this.ilands[i];
+            this.migration();
+
             await iland.breed();
         }
     }
@@ -94,15 +96,13 @@ export class IlandGeneticModel<T> {
     /**
      * Iland migrations alorithm
      */
-    public migration() {
-        const { migrationFunction } = this.options;
-
+    private migration() {
         for (let i = 0; i < this.options.ilandCount; i++) {
             const iland = this.ilands[i];
 
             for (let j = 0; j < iland.population.length; j++) {
                 if (Math.random() <= this.options.migrationProbability) {
-                    const selectedIndex = migrationFunction(iland.population);
+                    const selectedIndex = this.selectOne(iland);
                     const migratedPhonotype = this.peekPhenotye(iland, selectedIndex);
                     const newIland = this.getRandomIland(i);
 
@@ -131,6 +131,15 @@ export class IlandGeneticModel<T> {
         for (let i = 0; i < this.options.ilandCount; i++) {
             this.ilands[i].reorderPopulation();
         }
+    }
+
+    /**
+     * Select one phenotype from population
+     */
+    private selectOne(iland: Genetic<T>): number {
+        const { migrationFunction } = this.options;
+
+        return migrationFunction.call(this, iland.population);
     }
 
     /**
