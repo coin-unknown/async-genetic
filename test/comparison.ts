@@ -15,13 +15,20 @@ async function main() {
         console.log('In progress...', i, ilandGens, classicGens);
     }
 
+    const avgClassic = average(resultsClassic);
+    const avgIland = average(resultsIland);
     console.log('---- Average generation count needed to solve task ----\n');
-    console.log('Classic:', average(resultsClassic));
-    console.log('Iland:', average(resultsIland));
+    console.log('Classic:', avgClassic);
+    console.log('Iland:', avgIland);
+    console.log('Percent diff is:', isWhatPercentOf(avgIland, avgClassic));
 }
 
 main();
 
 function average(arr: number[]) {
     return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function isWhatPercentOf(numA, numB) {
+    return (numA / numB) * 100;
 }
