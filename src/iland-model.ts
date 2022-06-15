@@ -14,8 +14,6 @@ export interface IlandGeneticModelOptions<T> {
     ilandMutationProbability: number;
     ilandCrossoverProbability: number;
     migrationProbability: number;
-    continentCrossGeneration: number;
-    continentGenerations: number;
     migrationFunction: (pop: Array<Phenotype<T>>) => number;
 }
 
@@ -39,8 +37,6 @@ export class IlandGeneticModel<T> {
             ilandMutationProbability: 0.5,
             ilandCrossoverProbability: 0.8,
             migrationProbability: 0.05,
-            continentCrossGeneration: 10,
-            continentGenerations: 5,
             migrationFunction: MigrateSelec.Random,
         };
 
@@ -67,6 +63,11 @@ export class IlandGeneticModel<T> {
      * count should be more than ilands count
      */
     public best(count = 5): Array<Phenotype<T>> {
+        // If population on continent get from last one
+        if (this.continent.population.length) {
+            return this.continent.best(count);
+        }
+
         count = Math.max(this.options.ilandCount, count);
 
         const results: Array<Phenotype<T>> = [];
@@ -102,16 +103,11 @@ export class IlandGeneticModel<T> {
      */
     public async breed() {
         this.migration();
-        this.generations++;
 
-        if (this.options.continentCrossGeneration && this.generations % this.options.continentCrossGeneration === 0) {
-            await this.continentalBreed();
-        } else {
-            for (let i = 0; i < this.options.ilandCount; i++) {
-                const iland = this.ilands[i];
+        for (let i = 0; i < this.options.ilandCount; i++) {
+            const iland = this.ilands[i];
 
-                await iland.breed();
-            }
+            await iland.breed();
         }
     }
 
@@ -148,9 +144,9 @@ export class IlandGeneticModel<T> {
     }
 
     /**
-     * Continental orgasmic breed
+     * Move all population to one continent
      */
-    private async continentalBreed() {
+    public moveAllToContinent() {
         const totalPopulation: Array<Phenotype<T>> = [];
 
         for (let i = 0; i < this.options.ilandCount; i++) {
@@ -162,14 +158,12 @@ export class IlandGeneticModel<T> {
         }
 
         this.continent.population = totalPopulation;
+    }
 
-        await this.continent.breed();
-
-        for (let i = 0; i < this.options.continentGenerations; i++) {
-            await this.continent.estimate();
-            await this.continent.breed();
-        }
-
+    /**
+     * Move continent population to ilands
+     */
+    public migrateToIlands() {
         let activeIland = 0;
 
         while (this.continent.population.length) {
@@ -183,6 +177,20 @@ export class IlandGeneticModel<T> {
                 activeIland = 0;
             }
         }
+    }
+
+    /**
+     * Continental orgasmic breed
+     */
+    public async continentalEstimate() {
+        return this.continent.estimate();
+    }
+
+    /**
+     * Continental orgasmic breed
+     */
+    public async continentalBreed() {
+        await this.continent.breed();
     }
 
     /**

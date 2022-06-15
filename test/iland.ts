@@ -6,8 +6,7 @@ import { IlandGeneticModel, IlandGeneticModelOptions, MigrateSelec } from '../sr
 
 const GENERATIONS = 4000;
 const POPULATION = 4000;
-const solution =
-    'Insanity is doing the same thing over and over again and expecting different results, and hello every one i shoud test my genetic by find this string';
+const solution = 'Insanity is doing the same thing over and over again and expecting different results';
 
 export async function ilandGenetic(log: boolean) {
     function randomString(len: number) {
@@ -91,9 +90,10 @@ export async function ilandGenetic(log: boolean) {
         ilandCrossoverProbability: 0.8,
         migrationProbability: 0.1,
         migrationFunction: MigrateSelec.FittestLinear,
-        continentCrossGeneration: 10,
-        continentGenerations: 10,
     };
+
+    const continentBreenAfter = 50;
+    const continentGenerationsCount = 10;
 
     const genetic = new IlandGeneticModel<string>(ilandOptions, geneticOptions);
 
@@ -103,6 +103,20 @@ export async function ilandGenetic(log: boolean) {
         for (let i = 0; i <= GENERATIONS; i++) {
             if (log) {
                 console.count('gen');
+            }
+
+            if (i % continentBreenAfter === 0) {
+                // Move to continent
+                genetic.moveAllToContinent();
+
+                for (let j = 0; j < continentGenerationsCount; j++) {
+                    await genetic.continentalEstimate();
+                    await genetic.continentalBreed();
+                    i++;
+                }
+
+                // Move to ilands
+                genetic.migrateToIlands();
             }
 
             await genetic.estimate();
