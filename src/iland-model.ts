@@ -9,7 +9,7 @@ export const MigrateSelec = {
     Sequential,
 };
 
-interface IlandGeneticModelOptions<T> {
+export interface IlandGeneticModelOptions<T> {
     ilandCount: number;
     migrationProbability: number;
     migrationFunction: (pop: Array<Phenotype<T>>) => number;
@@ -39,21 +39,18 @@ export class IlandGeneticModel<T> {
         this.createIlands();
     }
 
-    public seed(entities?: T[]) {
-        this.ilands.forEach((iland) => iland.seed(entities));
-    }
-
     /**
      * Get best results from eash ilands (one by one)
      */
     public best(count = 5): Array<Phenotype<T>> {
         const results: Array<Phenotype<T>> = [];
+        const idxMap = {};
         let activeIland = 0;
 
         while (results.length < count) {
             const iland = this.ilands[activeIland];
-            iland.best();
-
+            results.push(iland.population[idxMap[activeIland] || 0]);
+            idxMap[activeIland] = (idxMap[activeIland] || 0) + 1;
             activeIland++;
 
             // Circullar reset index
@@ -65,6 +62,15 @@ export class IlandGeneticModel<T> {
         return results;
     }
 
+    /**
+     * Seed populations
+     */
+    public async seed(entities?: T[]) {
+        for (let i = 0; i < this.options.ilandCount; i++) {
+            const iland = this.ilands[i];
+            await iland.seed(entities);
+        }
+    }
     /**
      * Breed each iland
      */
