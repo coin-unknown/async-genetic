@@ -35,7 +35,12 @@ export class IlandGeneticModel<T> {
         };
 
         this.options = { ...defaultOptions, ...options };
-        this.geneticOptions = geneticOptions;
+        this.geneticOptions = {
+            ...geneticOptions,
+            // Reduce population size for each iland (sum of all phenotypes should be equal to total population count)
+            populationSize: Math.round(geneticOptions.populationSize / this.options.ilandCount),
+        };
+
         this.createIlands();
     }
 
