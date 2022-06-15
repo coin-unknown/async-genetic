@@ -4,9 +4,12 @@
 import { GeneticOptions, Select } from '../src/genetic';
 import { IlandGeneticModel, IlandGeneticModelOptions, MigrateSelec } from '../src/iland-model';
 
-export async function ilandGenetic(log: boolean) {
-    const solution = 'Insanity is doing the same thing over and over again and expecting different results';
+const GENERATIONS = 4000;
+const POPULATION = 4000;
+const solution =
+    'Insanity is doing the same thing over and over again and expecting different results, and hello every one i shoud test my genetic by find this string';
 
+export async function ilandGenetic(log: boolean) {
     function randomString(len: number) {
         let text = '';
         const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -64,8 +67,6 @@ export async function ilandGenetic(log: boolean) {
 
         return { fitness };
     }
-    const GENERATIONS = 4000;
-    const POPULATION = 250;
 
     const population = [];
 

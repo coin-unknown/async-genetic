@@ -2,7 +2,11 @@
 // local genetic is x2 faster
 
 import { Genetic, Select } from '../src/genetic';
-const solution = 'Insanity is doing the same thing over and over again and expecting different results';
+
+const GENERATIONS = 4000;
+const POPULATION = 4000;
+const solution =
+    'Insanity is doing the same thing over and over again and expecting different results, and hello every one i shoud test my genetic by find this string';
 
 export async function classicGenetic(log?: boolean) {
     function randomString(len: number) {
@@ -62,8 +66,6 @@ export async function classicGenetic(log?: boolean) {
 
         return { fitness };
     }
-    const GENERATIONS = 4000;
-    const POPULATION = 250;
 
     const population = [];
 

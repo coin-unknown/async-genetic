@@ -6,10 +6,13 @@ const resultsIland: number[] = [];
 
 async function main() {
     for (let i = 0; i < 50; i++) {
-        resultsIland.push(await ilandGenetic(false));
-        resultsClassic.push(await classicGenetic(false));
+        const ilandGens = await ilandGenetic(false);
+        const classicGens = await classicGenetic(false);
 
-        console.log('In progress...', i);
+        resultsIland.push(ilandGens);
+        resultsClassic.push(classicGens);
+
+        console.log('In progress...', i, ilandGens, classicGens);
     }
 
     console.log('---- Average generation count needed to solve task ----\n');
