@@ -31,6 +31,58 @@ export class IlandGeneticModel<T> {
     private geneticOptions: GeneticOptions<T>;
     private generations = 0;
 
+    /**
+     * Population getter for full compatibility with classic genetic interface
+     */
+    get population() {
+        // If population on continent get from last one
+        if (this.continent.population.length) {
+            return this.continent.population;
+        }
+
+        const totalPopulation: Array<Phenotype<T>> = [];
+
+        for (let i = 0; i < this.options.ilandCount; i++) {
+            const iland = this.ilands[i];
+
+            // Copy and reset population on iland
+            totalPopulation.push(...iland.population);
+        }
+
+        return totalPopulation;
+    }
+
+    /**
+     * Stats compatibility method, aggregate stats from all ilands
+     */
+    get stats() {
+        // If population on continent get from last one
+        if (this.continent.population.length) {
+            return this.continent.stats;
+        }
+
+        let stats = {};
+
+        for (let i = 0; i < this.options.ilandCount; i++) {
+            const iland = this.ilands[i];
+            const ilandStats = iland.stats;
+
+            if (i === 0) {
+                stats = { ...ilandStats };
+            } else {
+                for (const key in ilandStats) {
+                    stats[key] += ilandStats[key];
+                }
+            }
+        }
+
+        for (const key in stats) {
+            stats[key] /= this.options.ilandCount;
+        }
+
+        return stats;
+    }
+
     constructor(options: Partial<IlandGeneticModelOptions<T>>, geneticOptions: GeneticOptions<T>) {
         const defaultOptions: IlandGeneticModelOptions<T> = {
             ilandCount: 6,
