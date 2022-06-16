@@ -9,9 +9,9 @@ import typescript from 'rollup-plugin-typescript2';
 export default [
     // browser-friendly UMD build
     {
-        input: 'src/genetic.ts',
+        input: 'src/index.ts',
         output: {
-            name: 'genetic',
+            name: 'index',
             file: pkg.browser,
             format: 'umd',
         },
@@ -35,7 +35,7 @@ export default [
         ],
     },
     {
-        input: 'src/genetic.ts',
+        input: 'src/index.ts',
         external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
         plugins: [
             typescript({
