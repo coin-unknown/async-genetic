@@ -202,7 +202,7 @@ export class IslandGeneticModel<T> {
      */
     public moveAllToContinent() {
         // Population already on continent
-        if (this.continent.population) {
+        if (this.continent.population.length) {
             return;
         }
 
