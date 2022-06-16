@@ -8,6 +8,14 @@
 
 Genetic Algorithm (GA) is one of the most well-regarded evolutionary algorithms in the history. This algorithm mimics Darwinian theory of survival of the fittest in nature. This chapter presents the most fundamental concepts, operators, and mathematical models of this algorithm. The most popular improvements in the main component of this algorithm (selection, crossover, and mutation) are given too. The chapter also investigates the application of this technique in the field of image processing. In fact, the GA algorithm is employed to reconstruct a binary image from a completely random image.
 
+# Iland Model
+
+The simulation model of the behavior of population settlement on islands helps to create species diversity. On the islands, the degree of mutation and isolation of the population from the main part allows the creation of local dominant genes.
+
+In the local implementation of this model, the mainland is also used to cross all populations. You can manually manipulate the population migrations to the mainland and islands as often as you like.
+
+<img src="./.github/iland.png" width="400" />
+
 ## Installation
 
 Releases are available under Node Package Manager (npm):
@@ -177,9 +185,39 @@ async function crossoverFunction(mother: string, father: string) {
 | Type | Description |
 | ------------- | ------------- |
 | Select.Random | Select random phenotype from population |
+| Select.RandomLinear | Select random phenotype from population |
 | Select.Fittest | Select best one phenotype from population |
 | Select.FittestLinear | Select linear best one phenotypes from population |
 | Select.Tournament2 | Select 2 random phenotypes from population and take best of 2 |
 | Select.Tournament3 | Select 3 random phenotype from population and take best of 3|
 | Select.RandomLinearRank | Select random phenotype from population with linear rank |
 | Select.Sequential | Select phenotype from population by linear function |
+
+
+# Iland Model Manipulations
+
+### Migration method
+> Should be used for selection Phenotype and move to another iland (migrate)
+
+| Type | Description |
+| ------------- | ------------- |
+| Select.Random | Select random phenotype from population |
+| Select.RandomLinearelect random phenotype from population |
+| Select.Fittest | Select best one phenotype from population |
+| Select.FittestLinear | Select linear best one phenotypes from population |
+
+
+
+```javascript
+// Move to continent, ilands has no populations after that
+genetic.moveAllToContinent();
+
+// Estimate continental population
+await genetic.continentalEstimate();
+
+// Breen containental population 
+await genetic.continentalBreed();
+
+// Split population and move to ilands (each iland got same of total population part)
+genetic.migrateToIlands();
+```
