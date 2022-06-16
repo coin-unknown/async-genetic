@@ -29,7 +29,6 @@ export class IlandGeneticModel<T> {
     private continent: Genetic<T>;
     private options: IlandGeneticModelOptions<T>;
     private geneticOptions: GeneticOptions<T>;
-    private generations = 0;
 
     /**
      * Population getter for full compatibility with classic genetic interface
