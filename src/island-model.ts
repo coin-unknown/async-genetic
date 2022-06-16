@@ -25,6 +25,7 @@ export interface IslandGeneticModelOptions<T> {
 export class IslandGeneticModel<T> {
     protected internalGenState = {}; /* Used for random linear */
 
+    private populationOnContinent: boolean = false;
     private islands: Array<Genetic<T>> = [];
     private continent: Genetic<T>;
     private options: IslandGeneticModelOptions<T>;
@@ -156,6 +157,10 @@ export class IslandGeneticModel<T> {
      * Breed each island
      */
     public async breed() {
+        if (this.populationOnContinent) {
+            return this.continent.breed();
+        }
+
         this.migration();
 
         for (let i = 0; i < this.options.islandCount; i++) {
@@ -169,6 +174,10 @@ export class IslandGeneticModel<T> {
      * Estimate each island
      */
     public async estimate() {
+        if (this.populationOnContinent) {
+            return this.continent.estimate();
+        }
+
         for (let i = 0; i < this.options.islandCount; i++) {
             const island = this.islands[i];
             await island.estimate();
@@ -202,7 +211,7 @@ export class IslandGeneticModel<T> {
      */
     public moveAllToContinent() {
         // Population already on continent
-        if (this.continent.population.length) {
+        if (this.populationOnContinent) {
             return;
         }
 
@@ -217,6 +226,7 @@ export class IslandGeneticModel<T> {
         }
 
         this.continent.population = totalPopulation;
+        this.populationOnContinent = true;
     }
 
     /**
@@ -236,20 +246,8 @@ export class IslandGeneticModel<T> {
                 activeIsland = 0;
             }
         }
-    }
 
-    /**
-     * Continental orgasmic breed
-     */
-    public async continentalEstimate() {
-        return this.continent.estimate();
-    }
-
-    /**
-     * Continental orgasmic breed
-     */
-    public async continentalBreed() {
-        await this.continent.breed();
+        this.populationOnContinent = false;
     }
 
     /**

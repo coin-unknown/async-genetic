@@ -211,13 +211,6 @@ async function crossoverFunction(mother: string, father: string) {
 ```javascript
 // Move to continent, islands has no populations after that
 genetic.moveAllToContinent();
-
-// Estimate continental population
-await genetic.continentalEstimate();
-
-// Breen containental population 
-await genetic.continentalBreed();
-
 // Split population and move to islands (each island got same of total population part)
 genetic.migrateToIslands();
 ```
