@@ -57,8 +57,11 @@ export class IslandGeneticModel<T> {
     get stats() {
         // If population on continent get from last one
         if (this.continent.population.length) {
+            console.log('stats from continent');
             return this.continent.stats;
         }
+
+        console.log('stats from island');
 
         let stats = {};
 
@@ -198,6 +201,11 @@ export class IslandGeneticModel<T> {
      * Move all population to one continent
      */
     public moveAllToContinent() {
+        // Population already on continent
+        if (this.continent.population) {
+            return;
+        }
+
         const totalPopulation: Array<Phenotype<T>> = [];
 
         for (let i = 0; i < this.options.islandCount; i++) {
