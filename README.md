@@ -2,7 +2,7 @@
 
 **Async Genetic** its crossplatform implementation of genetic optimization algorithms. It's pretty asyncronous and use `Promises`.
 
-![Genetic Async](./.github/banner.png)
+<img src="./.github/banner.png" width="500" />
 
 # Abstract
 
