@@ -1,3 +1,3 @@
-import { ilandGenetic } from './iland';
+import { islandGenetic } from './island';
 
-ilandGenetic(true);
+islandGenetic(true);

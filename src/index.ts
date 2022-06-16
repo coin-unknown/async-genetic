@@ -1,3 +1,3 @@
 export * from './genetic';
-export * from './iland-model';
+export * from './island-model';
 export * from './utils';

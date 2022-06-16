@@ -1,26 +1,26 @@
 import { classicGenetic } from './genetic';
-import { ilandGenetic } from './iland';
+import { islandGenetic } from './island';
 
 const resultsClassic: number[] = [];
-const resultsIland: number[] = [];
+const resultsIsland: number[] = [];
 
 async function main() {
     for (let i = 0; i < 50; i++) {
-        const ilandGens = await ilandGenetic(false);
+        const islandGens = await islandGenetic(false);
         const classicGens = await classicGenetic(false);
 
-        resultsIland.push(ilandGens);
+        resultsIsland.push(islandGens);
         resultsClassic.push(classicGens);
 
-        console.log('In progress...', i, ilandGens, classicGens);
+        console.log('In progress...', i, islandGens, classicGens);
     }
 
     const avgClassic = average(resultsClassic);
-    const avgIland = average(resultsIland);
+    const avgIsland = average(resultsIsland);
     console.log('---- Average generation count needed to solve task ----\n');
     console.log('Classic:', avgClassic);
-    console.log('Iland:', avgIland);
-    console.log('Percent diff is:', isWhatPercentOf(avgIland, avgClassic));
+    console.log('Island:', avgIsland);
+    console.log('Percent diff is:', isWhatPercentOf(avgIsland, avgClassic));
 }
 
 main();

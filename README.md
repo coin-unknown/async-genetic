@@ -2,7 +2,7 @@
 
 **Async Genetic** its crossplatform implementation of genetic optimization algorithms. It's pretty asyncronous and use `Promises`.
 
-<img src="./.github/banner.png" width="500" />
+<img src="./.github/logo.png" width="500" />
 
 # Abstract
 
@@ -14,7 +14,7 @@ The simulation model of the behavior of population settlement on islands helps t
 
 In the local implementation of this model, the mainland is also used to cross all populations. You can manually manipulate the population migrations to the mainland and islands as often as you like.
 
-<img src="./.github/iland.png" width="400" />
+<img src="./.github/island.png" width="400" />
 
 ## Installation
 
@@ -27,7 +27,7 @@ Releases are available under Node Package Manager (npm):
 **Gnetic guess text phrase**
 
 [Classic Model Test](./test/genetic.ts)
-[Iland Model Test](./test/iland.ts)
+[Island Model Test](./test/island.ts)
 
 ![Genetic console](./.github/genetic-classic-console.png)
 ## How to use
@@ -194,10 +194,10 @@ async function crossoverFunction(mother: string, father: string) {
 | Select.Sequential | Select phenotype from population by linear function |
 
 
-# Iland Model Manipulations
+# Island Model Manipulations
 
 ### Migration method
-> Should be used for selection Phenotype and move to another iland (migrate)
+> Should be used for selection Phenotype and move to another island (migrate)
 
 | Type | Description |
 | ------------- | ------------- |
@@ -209,7 +209,7 @@ async function crossoverFunction(mother: string, father: string) {
 
 
 ```javascript
-// Move to continent, ilands has no populations after that
+// Move to continent, islands has no populations after that
 genetic.moveAllToContinent();
 
 // Estimate continental population
@@ -218,6 +218,6 @@ await genetic.continentalEstimate();
 // Breen containental population 
 await genetic.continentalBreed();
 
-// Split population and move to ilands (each iland got same of total population part)
-genetic.migrateToIlands();
+// Split population and move to islands (each island got same of total population part)
+genetic.migrateToIslands();
 ```

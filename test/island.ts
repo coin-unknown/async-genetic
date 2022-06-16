@@ -2,13 +2,13 @@
 // local genetic is x2 faster
 
 import { GeneticOptions, Select } from '../src/genetic';
-import { IlandGeneticModel, IlandGeneticModelOptions, MigrateSelec } from '../src/iland-model';
+import { IslandGeneticModel, IslandGeneticModelOptions, MigrateSelec } from '../src/island-model';
 
 const GENERATIONS = 4000;
 const POPULATION = 4000;
 const solution = 'Insanity is doing the same thing over and over again and expecting different results';
 
-export async function ilandGenetic(log: boolean) {
+export async function islandGenetic(log: boolean) {
     function randomString(len: number) {
         let text = '';
         const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -84,10 +84,10 @@ export async function ilandGenetic(log: boolean) {
         select2: Select.Tournament3,
     };
 
-    const ilandOptions: IlandGeneticModelOptions<string> = {
-        ilandCount: 8,
-        ilandMutationProbability: 0.8,
-        ilandCrossoverProbability: 0.8,
+    const ilandOptions: IslandGeneticModelOptions<string> = {
+        islandCount: 8,
+        islandMutationProbability: 0.8,
+        islandCrossoverProbability: 0.8,
         migrationProbability: 0.1,
         migrationFunction: MigrateSelec.FittestLinear,
     };
@@ -95,7 +95,7 @@ export async function ilandGenetic(log: boolean) {
     const continentBreenAfter = 50;
     const continentGenerationsCount = 10;
 
-    const genetic = new IlandGeneticModel<string>(ilandOptions, geneticOptions);
+    const genetic = new IslandGeneticModel<string>(ilandOptions, geneticOptions);
 
     async function solve() {
         await genetic.seed();
@@ -116,7 +116,7 @@ export async function ilandGenetic(log: boolean) {
                 }
 
                 // Move to ilands
-                genetic.migrateToIlands();
+                genetic.migrateToIslands();
             }
 
             await genetic.estimate();
