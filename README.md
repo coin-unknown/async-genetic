@@ -1,17 +1,27 @@
 # Blazing fast Genetic Algorithm
 
-Genetic is a [node.js](http://nodejs.org) implementation of genetic optimization algorithms. It's pretty asyncronous, so you can use it in your web applications without risking of blocking your application.
+**Async Genetic** its crossplatform implementation of genetic optimization algorithms. It's pretty asyncronous and use `Promises`.
+
+![Genetic Async](./.github/banner.png)
 
 # Abstract
 
 Genetic Algorithm (GA) is one of the most well-regarded evolutionary algorithms in the history. This algorithm mimics Darwinian theory of survival of the fittest in nature. This chapter presents the most fundamental concepts, operators, and mathematical models of this algorithm. The most popular improvements in the main component of this algorithm (selection, crossover, and mutation) are given too. The chapter also investigates the application of this technique in the field of image processing. In fact, the GA algorithm is employed to reconstruct a binary image from a completely random image.
 
-## Download ([example](https://github.com/BusinessDuck/async-genetic/blob/master/test/mytest.ts))
+## Installation
 
 Releases are available under Node Package Manager (npm):
 
     npm install async-genetic
 
+## Examples
+
+**Gnetic guess text phrase**
+
+[Classic Model Test](./test/genetic.ts)
+[Iland Model Test](./test/iland.ts)
+
+![Genetic console](./.github/genetic-classic-console.png)
 ## How to use
 
 ### GeneticAlgorithm constructor
