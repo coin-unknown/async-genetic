@@ -1,6 +1,6 @@
 import { Genetic, GeneticOptions, Phenotype } from './genetic';
 
-export const MigrateSelec = {
+export const Migrate = {
     Fittest,
     FittestLinear,
     FittestRandom,
@@ -25,7 +25,7 @@ export interface IslandGeneticModelOptions<T> {
 export class IslandGeneticModel<T> {
     protected internalGenState = {}; /* Used for random linear */
 
-    private populationOnContinent: boolean = false;
+    private populationOnContinent = false;
     private islands: Array<Genetic<T>> = [];
     private continent: Genetic<T>;
     private options: IslandGeneticModelOptions<T>;
@@ -92,7 +92,7 @@ export class IslandGeneticModel<T> {
             islandMutationProbability: 0.5,
             islandCrossoverProbability: 0.8,
             migrationProbability: 0.05,
-            migrationFunction: MigrateSelec.Random,
+            migrationFunction: Migrate.Random,
         };
 
         this.options = { ...defaultOptions, ...options };

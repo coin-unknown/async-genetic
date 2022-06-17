@@ -2,7 +2,7 @@
 // local genetic is x2 faster
 
 import { GeneticOptions, Select } from '../src/genetic';
-import { IslandGeneticModel, IslandGeneticModelOptions, MigrateSelec } from '../src/island-model';
+import { IslandGeneticModel, IslandGeneticModelOptions, Migrate } from '../src/island-model';
 
 const GENERATIONS = 4000;
 const POPULATION = 4000;
@@ -89,11 +89,11 @@ export async function islandGenetic(log: boolean) {
         islandMutationProbability: 0.8,
         islandCrossoverProbability: 0.8,
         migrationProbability: 0.1,
-        migrationFunction: MigrateSelec.FittestLinear,
+        migrationFunction: Migrate.FittestLinear,
     };
 
-    const continentBreenAfter = 50;
-    const continentGenerationsCount = 10;
+    const continentBreedAfter = 50;
+    let continentGenerationsCount = 0;
 
     const genetic = new IslandGeneticModel<string>(ilandOptions, geneticOptions);
 
@@ -105,18 +105,19 @@ export async function islandGenetic(log: boolean) {
                 console.count('gen');
             }
 
-            if (i % continentBreenAfter === 0) {
+            if (i !== 0 && i % continentBreedAfter === 0) {
                 // Move to continent
                 genetic.moveAllToContinent();
+                continentGenerationsCount = 10;
+            }
 
-                for (let j = 0; j < continentGenerationsCount; j++) {
-                    await genetic.continentalEstimate();
-                    await genetic.continentalBreed();
-                    i++;
+            if (continentGenerationsCount) {
+                continentGenerationsCount--;
+
+                if (continentGenerationsCount === 0) {
+                    // Move to ilands
+                    genetic.migrateToIslands();
                 }
-
-                // Move to ilands
-                genetic.migrateToIslands();
             }
 
             await genetic.estimate();

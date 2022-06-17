@@ -194,17 +194,81 @@ async function crossoverFunction(mother: string, father: string) {
 | Select.Sequential | Select phenotype from population by linear function |
 
 
-# Island Model Manipulations
+# Island Model 
+
+Island model have absolutely same interace with classic genetic.
+
+```javascript
+// Use Island model imports
+import { IslandGeneticModel, IslandGeneticModelOptions, Migrate, GeneticOptions } from 'async-genetic';
+
+// Island configuration
+const ilandOptions: IslandGeneticModelOptions<string> = {
+    islandCount: 8, // count of islands
+    islandMutationProbability: 0.8, // mutation on island are different from continental
+    islandCrossoverProbability: 0.8, // same for crossover, because island area are small
+    migrationProbability: 0.1, // migration to another iland chance
+    migrationFunction: Migrate.FittestLinear, // select migrated phenotype
+};
+
+// Move to continent after each 50 generations
+const continentBreedAfter = 50;
+// How many generations to breed at continent left
+let continentGenerationsCount = 0;
+
+const genetic = new IslandGeneticModel<string>(ilandOptions, geneticOptions);
+await genetic.seed();
+
+for (let i = 0; i <= GENERATIONS; i++) {
+    if (log) {
+        console.count('gen');
+    }
+
+    if (i !== 0 && i % continentBreedAfter === 0) {
+        // Move to continent
+        genetic.moveAllToContinent();
+        // Setup next 10 generations to breed at continent
+        continentGenerationsCount = 10;
+    }
+
+    if (continentGenerationsCount) {
+        // Reduce continent generations
+        continentGenerationsCount--;
+
+        // If continent generations over, move to islands
+        if (continentGenerationsCount === 0) {
+            // Move to ilands
+            genetic.migrateToIslands();
+        }
+    }
+
+    // Estimate on island or continent, by configuration
+    await genetic.estimate();
+
+    const bestOne = genetic.best()[0];
+
+    if (log) {
+        console.log(`${bestOne.entity} - ${bestOne.fitness}`);
+    }
+
+    await genetic.breed();
+
+    if (bestOne.entity === solution) {
+        return i;
+    }
+}
+
+```
 
 ### Migration method
 > Should be used for selection Phenotype and move to another island (migrate)
 
 | Type | Description |
 | ------------- | ------------- |
-| Select.Random | Select random phenotype from population |
-| Select.RandomLinearelect random phenotype from population |
-| Select.Fittest | Select best one phenotype from population |
-| Select.FittestLinear | Select linear best one phenotypes from population |
+| Migrate.Random | Select random phenotype from population |
+| Migrate.RandomLinearelect random phenotype from population |
+| Migrate.Fittest | Select best one phenotype from population |
+| Migrate.FittestLinear | Select linear best one phenotypes from population |
 
 
 
