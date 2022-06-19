@@ -11,7 +11,7 @@ export const Select = {
 export interface GeneticOptions<T> {
     mutationFunction: (phenotype: T) => Promise<T>;
     crossoverFunction: (a: T, b: T) => Promise<Array<T>>;
-    fitnessFunction: (phenotype: T) => Promise<{ fitness: number, state?: Record<string, unknown> }>;
+    fitnessFunction: (phenotype: T, isLast?: boolean) => Promise<{ fitness: number; state?: Record<string, unknown> }>;
     randomFunction: () => Promise<T>;
     populationSize: number;
     mutateProbablity?: number;
@@ -103,7 +103,13 @@ export class Genetic<T> {
         const { fitnessFunction } = this.options;
         // reset for each generation
         this.internalGenState = {};
-        const tasks = await Promise.all(this.population.map(({ entity }) => fitnessFunction(entity)));
+        const tasks = await Promise.all(
+            this.population.map(({ entity }, idx) => {
+                const isLast = idx === this.population.length - 1;
+
+                return fitnessFunction(entity, isLast);
+            }),
+        );
 
         for (let i = 0; i < this.population.length; i++) {
             const target = this.population[i];
