@@ -1,6 +1,6 @@
 # Blazing fast Genetic Algorithm
 
-**Async Genetic** its crossplatform implementation of genetic optimization algorithms. It's pretty asyncronous and use `Promises`.
+**Async Genetic** its crossplatform implementation of genetic algorithms. It's pretty asyncronous and use `Promises`. Genetic algorithms allow solving problems such as game balance optimization, solving equations, creating visual effects, optimizing system parameters, and others.
 
 <img src="./.github/logo.png" width="500" />
 
