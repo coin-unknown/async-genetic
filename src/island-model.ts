@@ -58,11 +58,8 @@ export class IslandGeneticModel<T> {
     get stats() {
         // If population on continent get from last one
         if (this.continent.population.length) {
-            console.log('stats from continent');
             return this.continent.stats;
         }
-
-        console.log('stats from island');
 
         let stats = {};
 
@@ -80,7 +77,9 @@ export class IslandGeneticModel<T> {
         }
 
         for (const key in stats) {
-            stats[key] /= this.options.islandCount;
+            if (key !== 'population') {
+                stats[key] /= this.options.islandCount;
+            }
         }
 
         return stats;
