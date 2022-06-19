@@ -203,11 +203,11 @@ Island model have absolutely same interface with classic genetic.
 import { IslandGeneticModel, IslandGeneticModelOptions, Migrate, GeneticOptions } from 'async-genetic';
 
 // Island configuration
-const ilandOptions: IslandGeneticModelOptions<string> = {
+const islandOptions: IslandGeneticModelOptions<string> = {
     islandCount: 8, // count of islands
     islandMutationProbability: 0.8, // mutation on island are different from continental
     islandCrossoverProbability: 0.8, // same for crossover, because island area are small
-    migrationProbability: 0.1, // migration to another iland chance
+    migrationProbability: 0.1, // migration to another island chance
     migrationFunction: Migrate.FittestLinear, // select migrated phenotype
 };
 
@@ -216,7 +216,7 @@ const continentBreedAfter = 50;
 // How many generations to breed at continent left
 let continentGenerationsCount = 0;
 
-const genetic = new IslandGeneticModel<string>(ilandOptions, geneticOptions);
+const genetic = new IslandGeneticModel<string>(islandOptions, geneticOptions);
 await genetic.seed();
 
 for (let i = 0; i <= GENERATIONS; i++) {
@@ -237,7 +237,7 @@ for (let i = 0; i <= GENERATIONS; i++) {
 
         // If continent generations over, move to islands
         if (continentGenerationsCount === 0) {
-            // Move to ilands
+            // Move to islands
             genetic.migrateToIslands();
         }
     }
