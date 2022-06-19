@@ -196,9 +196,9 @@ async function crossoverFunction(mother: string, father: string) {
 
 # Island Model 
 
-Island model have absolutely same interace with classic genetic.
+Island model have absolutely same interface with classic genetic.
 
-```javascript
+```typescript
 // Use Island model imports
 import { IslandGeneticModel, IslandGeneticModelOptions, Migrate, GeneticOptions } from 'async-genetic';
 
