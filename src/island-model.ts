@@ -177,10 +177,14 @@ export class IslandGeneticModel<T> {
             return this.continent.estimate();
         }
 
+        const tasks: Array<Promise<void>> = [];
+
         for (let i = 0; i < this.options.islandCount; i++) {
             const island = this.islands[i];
-            await island.estimate();
+            tasks.push(island.estimate());
         }
+
+        return Promise.all(tasks);
     }
 
     /**
