@@ -58,7 +58,7 @@ export class Genetic<T> {
         this.population = entities.map((entity) => ({ fitness: null, entity, state: {} }));
 
         // seed the population
-        return this.fill(this.population);
+        await this.fill(this.population);
     }
 
     public best(count = 1) {
@@ -103,6 +103,7 @@ export class Genetic<T> {
         const { fitnessFunction } = this.options;
         // reset for each generation
         this.internalGenState = {};
+
         const tasks = await Promise.all(
             this.population.map(({ entity }, idx) => {
                 const isLast = idx === this.population.length - 1;
@@ -141,10 +142,10 @@ export class Genetic<T> {
 
     /** Fill population if is not full */
     private async fill(arr: Phenotype<T>[]) {
-        if (arr.length < this.options.populationSize) {
-            for (let i = arr.length - 1; i < this.options.populationSize; i++) {
-                arr.push({ entity: await this.options.randomFunction(), fitness: null, state: {} });
-            }
+        while (arr.length < this.options.populationSize) {
+            const entity = await this.options.randomFunction();
+
+            arr.push({ entity, fitness: null, state: {} });
         }
     }
 
