@@ -103,19 +103,13 @@ export class Genetic<T> {
         const { fitnessFunction } = this.options;
         // reset for each generation
         this.internalGenState = {};
-        const tasks = await Promise.all(
-            this.population.map(({ entity }, idx) => {
-                const isLast = idx === this.population.length - 1;
-
-                return fitnessFunction(entity, isLast);
-            }),
-        );
 
         for (let i = 0; i < this.population.length; i++) {
             const target = this.population[i];
+            const result = await fitnessFunction(target.entity);
 
-            target.fitness = tasks[i].fitness;
-            target.state = tasks[i].state;
+            target.fitness = result.fitness;
+            target.state = result.state;
         }
 
         this.reorderPopulation();
