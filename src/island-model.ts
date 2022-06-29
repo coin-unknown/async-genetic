@@ -122,7 +122,9 @@ export class IslandGeneticModel<T> {
             return this.continent.best(count);
         }
 
-        count = Math.max(this.options.islandCount, count);
+        if (count < this.options.islandCount) {
+            count = this.options.islandCount;
+        }
 
         const results: Array<Phenotype<T>> = [];
         const idxMap = {};
