@@ -66,7 +66,7 @@ export async function classicGenetic(log?: boolean) {
         return { fitness };
     }
 
-    const population = [];
+    const population: Promise<string>[] = [];
 
     for (let i = 0; i < POPULATION; i++) {
         population.push(randomFunction());
