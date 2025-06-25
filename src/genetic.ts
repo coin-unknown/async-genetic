@@ -71,21 +71,30 @@ export class Genetic<T> {
     public async breed() {
         // crossover and mutate
         let newPop: Array<Phenotype<T>> = [];
+        const maxAttempts = this.options.populationSize * 10;
+        let attempts = 0;
 
         // lets the best solution fall through
         if (this.options.fittestNSurvives) {
             const cutted = this.cutPopulation(this.options.fittestNSurvives);
-
             for (const item of cutted) {
                 newPop.push({ ...item, fitness: null, state: {} });
             }
         }
 
-        // Lenght may be change dynamically, because fittest and some pairs from crossover
-        while (newPop.length <= this.options.populationSize) {
+        // Генерация потомков с лимитом попыток
+        while (newPop.length < this.options.populationSize && attempts < maxAttempts) {
             const crossed = await this.tryCrossover();
-
+            if (crossed.length === 0) {
+                attempts++;
+                continue;
+            }
             newPop.push(...crossed.map((entity) => ({ fitness: null, entity, state: {} })));
+            attempts++;
+        }
+        // Обрезаем лишних
+        if (newPop.length > this.options.populationSize) {
+            newPop = newPop.slice(0, this.options.populationSize);
         }
 
         if (this.options.deduplicate) {
@@ -122,14 +131,15 @@ export class Genetic<T> {
         this.reorderPopulation();
 
         const popLen = this.population.length;
-        const mean = this.getMean();
+        const averageFitness = Number(this.getMean().toFixed(4));
+        const fitnessStdDev = Number(this.getStdev(averageFitness).toFixed(4));
 
         this.stats = {
             population: this.population.length,
             maximum: this.population[0].fitness,
             minimum: this.population[popLen - 1].fitness,
-            mean,
-            stdev: this.getStdev(mean),
+            averageFitness,
+            fitnessStdDev,
         };
     }
 
@@ -137,15 +147,27 @@ export class Genetic<T> {
      * Appli population sorting
      */
     public reorderPopulation() {
+        // Фильтруем особей без fitness
+        this.population = this.population.filter((p) => typeof p.fitness === 'number');
+        if (!this.population.length) return;
         this.population = this.population.sort((a, b) => (this.options.optimize(a, b) ? -1 : 1));
     }
 
     /** Fill population if is not full */
     private async fill(arr: Phenotype<T>[]) {
-        while (arr.length < this.options.populationSize) {
+        const maxAttempts = this.options.populationSize * 10;
+        let attempts = 0;
+        while (arr.length < this.options.populationSize && attempts < maxAttempts) {
             const entity = await this.options.randomFunction();
-
+            if (this.options.deduplicate && !this.options.deduplicate(entity)) {
+                attempts++;
+                continue;
+            }
             arr.push({ entity, fitness: null, state: {} });
+            attempts++;
+        }
+        if (arr.length < this.options.populationSize) {
+            throw new Error('Could not fill population to required size. Check randomFunction or deduplicate.');
         }
     }
 
@@ -183,17 +205,23 @@ export class Genetic<T> {
      * Mean deviation
      */
     private getMean() {
-        return this.population.reduce((a, b) => a + b.fitness, 0) / this.population.length;
+        if (!this.population.length) return 0;
+        const valid = this.population.filter((p) => typeof p.fitness === 'number');
+        if (!valid.length) return 0;
+        return valid.reduce((a, b) => a + b.fitness, 0) / valid.length;
     }
 
     /**
      * Standart deviation
      */
     private getStdev(mean: number) {
-        const { population: pop } = this;
-        const l = pop.length;
-
-        return Math.sqrt(pop.map(({ fitness }) => (fitness - mean) * (fitness - mean)).reduce((a, b) => a + b, 0) / l);
+        if (!this.population.length) return 0;
+        const valid = this.population.filter((p) => typeof p.fitness === 'number');
+        if (!valid.length) return 0;
+        const l = valid.length;
+        return Math.sqrt(
+            valid.map(({ fitness }) => (fitness - mean) * (fitness - mean)).reduce((a, b) => a + b, 0) / l,
+        );
     }
 
     /**
@@ -210,8 +238,19 @@ export class Genetic<T> {
      */
     private selectPair(): T[] {
         const { select2 } = this.options;
-
-        return [select2.call(this, this.population), select2.call(this, this.population)];
+        if (this.population.length < 2) {
+            // fallback: два раза один и тот же
+            const one = select2.call(this, this.population);
+            return [one, one];
+        }
+        const first = select2.call(this, this.population);
+        let second = select2.call(this, this.population);
+        let attempts = 0;
+        while (first === second && attempts < 10) {
+            second = select2.call(this, this.population);
+            attempts++;
+        }
+        return [first, second];
     }
 
     /**
