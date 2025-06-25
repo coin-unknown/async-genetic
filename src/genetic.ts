@@ -130,16 +130,19 @@ export class Genetic<T> {
 
         this.reorderPopulation();
 
+        // Вычисляем основные метрики популяции
         const popLen = this.population.length;
+        const maximum = Number(this.population[0].fitness.toFixed(4));
         const averageFitness = Number(this.getMean().toFixed(4));
         const fitnessStdDev = Number(this.getStdev(averageFitness).toFixed(4));
 
+        // Формируем объект статистики с понятными именами
         this.stats = {
             population: this.population.length,
-            maximum: this.population[0].fitness,
+            maximum, // максимальный fitness в популяции
             minimum: this.population[popLen - 1].fitness,
-            averageFitness,
-            fitnessStdDev,
+            averageFitness, // средний fitness
+            fitnessStdDev, // стандартное отклонение fitness
         };
     }
 
@@ -149,7 +152,11 @@ export class Genetic<T> {
     public reorderPopulation() {
         // Фильтруем особей без fitness
         this.population = this.population.filter((p) => typeof p.fitness === 'number');
-        if (!this.population.length) return;
+
+        if (!this.population.length) {
+            return;
+        }
+
         this.population = this.population.sort((a, b) => (this.options.optimize(a, b) ? -1 : 1));
     }
 
@@ -205,9 +212,16 @@ export class Genetic<T> {
      * Mean deviation
      */
     private getMean() {
-        if (!this.population.length) return 0;
+        if (!this.population.length) {
+            return 0;
+        }
+
         const valid = this.population.filter((p) => typeof p.fitness === 'number');
-        if (!valid.length) return 0;
+
+        if (!valid.length) {
+            return 0;
+        }
+
         return valid.reduce((a, b) => a + b.fitness, 0) / valid.length;
     }
 
