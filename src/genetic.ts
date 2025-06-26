@@ -136,15 +136,15 @@ export class Genetic<T> {
 
         // Вычисляем основные метрики популяции
         const popLen = this.population.length;
-        const maximum = Number(this.population[0].fitness.toFixed(4));
+        const maximumFitness = Number(this.population[0].fitness.toFixed(4));
         const averageFitness = Number(this.getMean().toFixed(4));
         const fitnessStdDev = Number(this.getStdev(averageFitness).toFixed(4));
 
         // Формируем объект статистики с понятными именами
         this.stats = {
-            population: this.population.length,
-            maximum, // максимальный fitness в популяции
-            minimum: this.population[popLen - 1].fitness,
+            fitPopulation: this.population.length,
+            maximumFitness, // максимальный fitness в популяции
+            minimumFitness: this.population[popLen - 1].fitness,
             averageFitness, // средний fitness
             fitnessStdDev, // стандартное отклонение fitness
         };
