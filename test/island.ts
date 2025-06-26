@@ -79,7 +79,7 @@ export async function islandGenetic(log: boolean) {
         fitnessFunction,
         randomFunction,
         populationSize: POPULATION,
-        fittestNSurvives: 1,
+        fittestNSurvives: Math.floor(POPULATION * 0.05),
         select1: Select.FittestLinear,
         select2: Select.Tournament3,
     };

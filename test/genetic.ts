@@ -46,8 +46,8 @@ export async function classicGenetic(log?: boolean) {
             ca = tmp;
         }
 
-        const son = father.substr(0, ca) + mother.substr(ca, cb - ca) + father.substr(cb);
-        const daughter = mother.substr(0, ca) + father.substr(ca, cb - ca) + mother.substr(cb);
+        const son = mother.slice(0, ca) + father.slice(ca, cb) + mother.slice(cb);
+        const daughter = father.slice(0, ca) + mother.slice(ca, cb) + father.slice(cb);
 
         return [son, daughter];
     }
@@ -78,10 +78,10 @@ export async function classicGenetic(log?: boolean) {
         fitnessFunction,
         randomFunction,
         populationSize: POPULATION,
-        fittestNSurvives: 1,
+        fittestNSurvives: Math.floor(POPULATION * 0.05),
         select1: Select.FittestLinear,
         select2: Select.Tournament3,
-        mutateProbablity: 0.8,
+        mutateProbablity: 0.6,
         crossoverProbablity: 0.8,
     });
 

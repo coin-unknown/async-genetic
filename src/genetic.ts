@@ -189,12 +189,12 @@ export class Genetic<T> {
         const { crossoverProbablity, crossoverFunction } = this.options;
         let selected = crossoverFunction && Math.random() <= crossoverProbablity ? this.selectPair() : this.selectOne();
 
-        if (selected.length > 1) {
-            selected = await crossoverFunction({ ...selected[0] }, { ...selected[1] });
+        if (selected.length > 1 && crossoverFunction) {
+            selected = await crossoverFunction(clone(selected[0]), clone(selected[1]));
         }
 
         for (let i = 0; i < selected.length; i++) {
-            selected[i] = await this.tryMutate({ ...selected[i] });
+            selected[i] = await this.tryMutate(clone(selected[i]));
         }
 
         return selected;
@@ -345,4 +345,16 @@ function TrueLinearRank<T>(this: Genetic<T>, pop: Array<Phenotype<T>>): T {
     }
 
     return pop[n - 1].entity; // fallback (почти не случается)
+}
+
+/**
+ * Create object clones
+ * @param val
+ * @returns
+ */
+function clone<T>(val: T): T {
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+        return { ...val };
+    }
+    return val;
 }
