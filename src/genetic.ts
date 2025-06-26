@@ -142,7 +142,7 @@ export class Genetic<T> {
 
         // Формируем объект статистики с понятными именами
         this.stats = {
-            fitPopulation: this.population.length,
+            fitnessPopulation: this.population.length,
             maximumFitness, // максимальный fitness в популяции
             minimumFitness: this.population[popLen - 1].fitness,
             averageFitness, // средний fitness
