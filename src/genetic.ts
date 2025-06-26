@@ -4,6 +4,7 @@ export const Select = {
     FittestRandom,
     Random,
     RandomLinearRank,
+    TrueLinearRank,
     Sequential,
     Tournament2,
     Tournament3,
@@ -69,20 +70,21 @@ export class Genetic<T> {
      * Breed population with optional breed settings
      */
     public async breed() {
-        // crossover and mutate
-        let newPop: Array<Phenotype<T>> = [];
-        const maxAttempts = this.options.populationSize * 10;
-        let attempts = 0;
+        // Сохраняем элиту отдельно
+        const elitePhenotypes: Array<Phenotype<T>> = [];
 
         // lets the best solution fall through
         if (this.options.fittestNSurvives) {
             const cutted = this.cutPopulation(this.options.fittestNSurvives);
             for (const item of cutted) {
-                newPop.push({ ...item, fitness: null, state: {} });
+                elitePhenotypes.push({ ...item, fitness: null, state: {} });
             }
         }
 
-        // Генерация потомков с лимитом попыток
+        let newPop: Array<Phenotype<T>> = [];
+        const maxAttempts = this.options.populationSize * 10;
+        let attempts = 0;
+
         while (newPop.length < this.options.populationSize && attempts < maxAttempts) {
             const crossed = await this.tryCrossover();
             if (crossed.length === 0) {
@@ -92,13 +94,15 @@ export class Genetic<T> {
             newPop.push(...crossed.map((entity) => ({ fitness: null, entity, state: {} })));
             attempts++;
         }
-        // Обрезаем лишних
-        if (newPop.length > this.options.populationSize) {
-            newPop = newPop.slice(0, this.options.populationSize);
-        }
 
         if (this.options.deduplicate) {
             newPop = newPop.filter((ph) => this.options.deduplicate(ph.entity));
+        }
+
+        newPop = [...elitePhenotypes, ...newPop];
+
+        if (newPop.length > this.options.populationSize) {
+            newPop = newPop.slice(0, this.options.populationSize);
         }
 
         await this.fill(newPop);
@@ -186,11 +190,11 @@ export class Genetic<T> {
         let selected = crossoverFunction && Math.random() <= crossoverProbablity ? this.selectPair() : this.selectOne();
 
         if (selected.length > 1) {
-            selected = await crossoverFunction(selected[0], selected[1]);
+            selected = await crossoverFunction({ ...selected[0] }, { ...selected[1] });
         }
 
         for (let i = 0; i < selected.length; i++) {
-            selected[i] = await this.tryMutate(selected[i]);
+            selected[i] = await this.tryMutate({ ...selected[i] });
         }
 
         return selected;
@@ -324,4 +328,21 @@ function Sequential<T>(this: Genetic<T>, pop: Array<Phenotype<T>>) {
     this.internalGenState['seq'] = this.internalGenState['seq'] >= pop.length ? 0 : this.internalGenState['seq'] || 0;
 
     return pop[this.internalGenState['seq']++ % pop.length].entity;
+}
+
+function TrueLinearRank<T>(this: Genetic<T>, pop: Array<Phenotype<T>>): T {
+    // сумма рангов: N + (N-1) + ... + 1 = N*(N+1)/2
+    const n = pop.length;
+    const totalRank = (n * (n + 1)) / 2;
+
+    let r = Math.random() * totalRank;
+    for (let i = 0; i < n; i++) {
+        const rank = n - i; // лучший = n, худший = 1
+        r -= rank;
+        if (r <= 0) {
+            return pop[i].entity;
+        }
+    }
+
+    return pop[n - 1].entity; // fallback (почти не случается)
 }
